@@ -1,0 +1,10 @@
+Caltech 5-landmark biometric authentication — PPA #3
+Total samples: 375, identities: 20
+Training templates: 251; testing queries: 124 (33%)
+Extracted feature shape: (251, 25) (25 distances per face)
+Matching probability matrix: (124, 20)
+Genuine scores: 124; impostor scores: 2356
+ROC AUC: 0.7569
+Equal Error Rate: 0.2612
+d-prime: 1.0973
+Plots saved to: C:\Users\anwar\Desktop\CAP4103 - Mobile Biometrics\CAP4103 - Course Project\CAP4103-Biometric-Fusion\ppa3_legacy\plots
