@@ -1,10 +1,12 @@
 # Nafis implementation status
 
-N1-N7 code and first measured RQ1 are implemented. Final integrity review passed all 16 tests. A clean-source repeat run reproduced every validation/test face/palm score within 1e-12 absolute tolerance. See results/metrics/verification.json and rq1_reproducibility.json. Sakeeb's acceptance of the handoff remains a separate step.
+N1-N7 code and measured RQ1 are implemented. The approved six follow-up improvements are complete: protected manifests, isolated legacy verification, shared experiment helpers and frozen model loading, configurable score descriptions, explicit run status/provenance and corrected working notes. Sakeeb's acceptance of the handoff remains a separate step.
+
+Latest structural-refactor reproduction: rq1_structure_verified_20261112. It selects PCA64/HOG and reproduces every validation/test face/palm score exactly, with byte-identical models. The final 33-test suite, artifact checks and no-file-change audit are recorded in results/metrics/structure_improvements_verification.json and .txt. Text hashes tolerate Git line-ending conversion; image/model hashes require exact bytes. Earlier verification.json and rq1_reproducibility.json remain historical evidence for the original baseline.
 
 Completed: repository cleanup; byte-preserved runnable legacy code/data; public dataset retrieval and integrity/audit tools; 39-user artificial mapping; session-aware 4/2/4 partitions; fixed validation/test claim manifests; enrollment-only PCA face and HOG/LBP palm pipelines; validation model selection; keyed raw score exports; general evaluator and actual RQ1 metrics/figures. No README or .gitkeep files remain in project-owned source folders.
 
-Actual outputs are located by results/metrics/rq1_latest.json. The first measured face EER is 0.0895748987854251 and palm EER is 0.2380229419703104, using interpolated empirical ROC EER. These are new image-dataset results, distinct from the legacy Caltech EER 0.2612.
+Actual latest outputs are located by results/metrics/rq1_latest.json. results/metrics/rq1_accepted.json separately pins the original verified Nafis baseline rq1_20261112T151158Z_e192d8, without claiming teammate acceptance. Face EER remains 0.0895748987854251 and palm EER remains 0.2380229419703104, using interpolated empirical ROC EER. These are image-dataset results, distinct from the legacy Caltech EER 0.2612.
 
 Source caveat: BMPD Kaggle license metadata is Unknown, even though the course preapproves the dataset. No redistribution permission is claimed; raw images, contact sheets and frozen models remain ignored/local. The heuristic ROI lacks rotation/anatomical alignment. See methodology.md for the actual controls and limitations.
 

@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "verified_at_utc": "2026-11-12T16:32:45.651671+00:00",
+  "accepted_run": "rq1_20261112T151158Z_e192d8",
+  "reproduction_run": "rq1_structure_verified_20261112",
+  "tests_run": 33,
+  "tests_skipped": 0,
+  "repository_files_changed_by_tests": [],
+  "scores": {
+    "validation_scores.csv": {
+      "face_maximum_absolute_difference": 0.0,
+      "palm_maximum_absolute_difference": 0.0
+    },
+    "rq1_baseline_scores.csv": {
+      "face_maximum_absolute_difference": 0.0,
+      "palm_maximum_absolute_difference": 0.0
+    }
+  },
+  "model_bytes_identical": {
+    "face": true,
+    "palm": true
+  },
+  "source_hashes_match_reproduction": true,
+  "nine_original_manifest_hashes_unchanged": true,
+  "required_artifacts_verified": 16,
+  "legacy_source_hashes_unchanged": true,
+  "new_and_modified_python_comments": "inline, lowercase, no space after #",
+  "diff_whitespace_check": "passed",
+  "text_hash_line_endings": "normalized to lf; all other text bytes preserved",
+  "fresh_checkout_line_endings_test": "passed",
+  "intermediate_run_archive": "data/processed/development_runs"
+}

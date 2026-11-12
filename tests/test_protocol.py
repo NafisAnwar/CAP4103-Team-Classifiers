@@ -1,8 +1,9 @@
 from pathlib import Path
 import tempfile
 import unittest
-from src.files import write_csv, read_csv
+from src.files import write_csv, read_csv, write_json, manifest_hashes
 from src.trial_protocol import build_protocol, validate_partitions, validate_trials, make_trials, load_protocol
+from src.datasets import audit_datasets
 
 
 class ProtocolTest(unittest.TestCase):
@@ -21,13 +22,15 @@ class ProtocolTest(unittest.TestCase):
                               'pixel_sha256': f'palm_{subject}_{number}'})
         write_csv(self.root / 'data/manifests/face_samples.csv', faces)
         write_csv(self.root / 'data/manifests/palm_samples.csv', palms)
+        write_csv(self.root / 'data/manifests/palm_subject_counts.csv', [{'subject_id': 'fixture'}])
+        write_json(self.root / 'data/manifests/dataset_summary.json', {'fixture': True})
         self.addCleanup(self.folder.cleanup)
 
     def test_seeded_manifest_is_repeatable_and_session_separated(self):
         config = build_protocol(self.root)
         path = self.root / 'data/manifests/partitions.csv'
         first = path.read_bytes()
-        build_protocol(self.root)
+        build_protocol(self.root, rebuild=True) #an intentional repeat has to say it will replace the protocol
         self.assertEqual(first, path.read_bytes())
         self.assertEqual(config['trial_counts'], {'validation': 18, 'test': 36})
         rows = read_csv(path)
@@ -66,6 +69,25 @@ class ProtocolTest(unittest.TestCase):
         next(row for row in rows if row['modality'] == 'palm')['session_if_available'] = 'wrong'
         with self.assertRaises(ValueError):
             validate_partitions(rows)
+
+    def test_existing_audit_and_protocol_require_explicit_rebuild(self):
+        with self.assertRaises(FileExistsError):
+            audit_datasets(self.root) #this must fail before trying to read any raw data
+        build_protocol(self.root)
+        before = manifest_hashes(self.root)
+        with self.assertRaises(FileExistsError):
+            build_protocol(self.root)
+        self.assertEqual(before, manifest_hashes(self.root))
+
+    def test_even_structurally_valid_manifest_edits_break_the_lock(self):
+        build_protocol(self.root)
+        path = self.root / 'data/manifests/partitions.csv'
+        rows = read_csv(path)
+        rows[0]['source_path_or_key'] = 'changed_source'
+        write_csv(path, rows)
+        validate_partitions(rows) #structural checks alone would accept this change
+        with self.assertRaisesRegex(ValueError, 'Frozen protocol changed'):
+            load_protocol(self.root)
 
 
 if __name__ == '__main__':

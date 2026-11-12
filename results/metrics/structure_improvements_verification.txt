@@ -1,0 +1,49 @@
+Caltech 5-landmark biometric authentication — PPA #3
+Total samples: 375, identities: 20
+Training templates: 251; testing queries: 124 (33%)
+Extracted feature shape: (251, 25) (25 distances per face)
+Matching probability matrix: (124, 20)
+Genuine scores: 124; impostor scores: 2356
+ROC AUC: 0.7569
+Equal Error Rate: 0.2612
+d-prime: 1.0973
+Plots saved to: C:\Users\anwar\AppData\Local\Temp\cap4103_legacy_pud7dh_u\plots
+PASS: unchanged source, sample/claim counts, metrics and three generated figures
+test_palm_labels_are_explicit (test_datasets.DatasetTest.test_palm_labels_are_explicit) ... ok
+test_roi_rejects_missing_skin_and_crops_interior (test_datasets.DatasetTest.test_roi_rejects_missing_skin_and_crops_interior) ... ok
+test_shared_image_loader_checks_pixels_and_preserves_the_palm_crop (test_datasets.DatasetTest.test_shared_image_loader_checks_pixels_and_preserves_the_palm_crop) ... ok
+test_custom_fusion_description_is_used_in_metrics_and_plot (test_evaluation.EvaluationTest.test_custom_fusion_description_is_used_in_metrics_and_plot) ... ok
+test_invalid_inputs_fail (test_evaluation.EvaluationTest.test_invalid_inputs_fail) ... ok
+test_perfect_separation_on_negative_and_positive_similarity_scales (test_evaluation.EvaluationTest.test_perfect_separation_on_negative_and_positive_similarity_scales) ... ok
+test_tied_scores_and_reversed_direction_are_visible (test_evaluation.EvaluationTest.test_tied_scores_and_reversed_direction_are_visible) ... ok
+test_exported_scores_exactly_cover_the_manifest_and_reproduce_metrics (test_experiment_integrity.ExperimentIntegrityTest.test_exported_scores_exactly_cover_the_manifest_and_reproduce_metrics) ... ok
+test_frozen_models_use_only_enrollment_and_reproduce_a_probe (test_experiment_integrity.ExperimentIntegrityTest.test_frozen_models_use_only_enrollment_and_reproduce_a_probe) ... ok
+test_reproduced_models_can_be_loaded_without_replacing_the_accepted_paths (test_experiment_integrity.ExperimentIntegrityTest.test_reproduced_models_can_be_loaded_without_replacing_the_accepted_paths) ... ok
+test_a_refreshed_lock_cannot_replace_the_accepted_protocol (test_frozen_models.FrozenModelGuardsTest.test_a_refreshed_lock_cannot_replace_the_accepted_protocol) ... ok
+test_feature_code_and_scores_are_checked (test_frozen_models.FrozenModelGuardsTest.test_feature_code_and_scores_are_checked) ... ok
+test_fresh_checkout_line_endings_pass_until_local_models_are_needed (test_frozen_models.FrozenModelGuardsTest.test_fresh_checkout_line_endings_pass_until_local_models_are_needed) ... ok
+test_metadata_tampering_is_rejected (test_frozen_models.FrozenModelGuardsTest.test_metadata_tampering_is_rejected) ... ok
+test_model_bytes_are_checked_before_loading (test_frozen_models.FrozenModelGuardsTest.test_model_bytes_are_checked_before_loading) ... ok
+test_unchanged_ppa3_reproduces_counts_metrics_and_figures (test_legacy_regression.LegacyRegressionTest.test_unchanged_ppa3_reproduces_counts_metrics_and_figures) ... ok
+test_face_model_is_repeatable_and_scoring_does_not_refit (test_matching.MatchingTest.test_face_model_is_repeatable_and_scoring_does_not_refit) ... ok
+test_paired_raw_scores_join_on_keys_and_reject_corruption (test_matching.MatchingTest.test_paired_raw_scores_join_on_keys_and_reject_corruption) ... ok
+test_palm_feature_dimensions_and_finite_scoring (test_matching.MatchingTest.test_palm_feature_dimensions_and_finite_scoring) ... ok
+test_sorted_classes_and_claim_lookup_independent_of_probe_order (test_matching.MatchingTest.test_sorted_classes_and_claim_lookup_independent_of_probe_order) ... ok
+test_claim_labels_missing_rows_and_wrong_split_are_rejected (test_protocol.ProtocolTest.test_claim_labels_missing_rows_and_wrong_split_are_rejected) ... ok
+test_duplicate_pixels_across_splits_are_rejected (test_protocol.ProtocolTest.test_duplicate_pixels_across_splits_are_rejected) ... ok
+test_even_structurally_valid_manifest_edits_break_the_lock (test_protocol.ProtocolTest.test_even_structurally_valid_manifest_edits_break_the_lock) ... ok
+test_existing_audit_and_protocol_require_explicit_rebuild (test_protocol.ProtocolTest.test_existing_audit_and_protocol_require_explicit_rebuild) ... ok
+test_mapping_or_palm_session_corruption_is_rejected (test_protocol.ProtocolTest.test_mapping_or_palm_session_corruption_is_rejected) ... ok
+test_seeded_manifest_is_repeatable_and_session_separated (test_protocol.ProtocolTest.test_seeded_manifest_is_repeatable_and_session_separated) ... ok
+test_atomic_json_failure_preserves_existing_file_and_cleans_temporary (test_run_artifacts.RunArtifactsTest.test_atomic_json_failure_preserves_existing_file_and_cleans_temporary) ... ok
+test_completed_run_publishes_artifact_hashes_and_latest (test_run_artifacts.RunArtifactsTest.test_completed_run_publishes_artifact_hashes_and_latest) ... ok
+test_exception_is_recorded_and_latest_is_unchanged (test_run_artifacts.RunArtifactsTest.test_exception_is_recorded_and_latest_is_unchanged) ... ok
+test_model_only_collision_is_rejected_without_other_outputs (test_run_artifacts.RunArtifactsTest.test_model_only_collision_is_rejected_without_other_outputs) ... ok
+test_pointer_publication_failure_marks_metadata_failed (test_run_artifacts.RunArtifactsTest.test_pointer_publication_failure_marks_metadata_failed) ... ok
+test_source_changes_and_missing_artifacts_prevent_completion (test_run_artifacts.RunArtifactsTest.test_source_changes_and_missing_artifacts_prevent_completion) ... ok
+test_text_hash_allows_only_line_ending_changes (test_run_artifacts.RunArtifactsTest.test_text_hash_allows_only_line_ending_changes) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 4.599s
+
+OK

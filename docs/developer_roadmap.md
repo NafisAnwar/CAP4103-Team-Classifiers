@@ -1,11 +1,11 @@
 # Developer roadmap and gates
 
-Detailed source plan: `reference/CAP4103_PPA3_Extension_Implementation_Plan.txt`. This checklist tracks future work, rather than claiming it is implemented.
+Detailed source plan: `reference/CAP4103_PPA3_Extension_Implementation_Plan.txt`. Nafis's implementation checklist is complete locally; Sakeeb's independent acceptance and later engineering work remain pending. docs/project_status.md is the authoritative current progress record.
 
 | Phase | Units | Deliverable and gate |
 | --- | ---: | --- |
 | N1 | 10 | Unchanged legacy run, clean environment/repository and setup evidence |
-| N2 | 8 | Permitted datasets audited; counts, identities, sides, sessions and exclusions recorded |
+| N2 | 8 | Dataset provenance audited; counts, identities, sides, sessions, exclusions and unresolved BMPD rights recorded |
 | N3 | 10 | Deterministic artificial mapping, leak-free enrollment/validation/test partitions, paired claim manifests |
 | N4 | 12 | Enrollment-fit PCA face pipeline, stable class ordering, finite claimed-ID scores |
 | N5 | 10 | Verified right-palm parser/ROI/features and scores for every shared claim |
@@ -15,19 +15,19 @@ Detailed source plan: `reference/CAP4103_PPA3_Extension_Implementation_Plan.txt`
 | S2 | 10 | Frozen-model facial-probe Gaussian blur and measured RQ3 |
 | S3 | 8 | Consistent master metrics and uniquely named publication figures |
 | S4 | 7 | Integrity tests, repeatability audit, validation-only palm improvements |
-| S5 | 5 | Final README/methods/results and report/presentation evidence package |
+| S5 | 5 | Final methods/results notes and report/presentation evidence package; no README files |
 
 Nafis implements N1-N7 before transfer (60 units). Sakeeb implements S1-S5 after accepting the tested handoff (40 units). One unit is an effort estimate, not a percentage of the course grade.
 
 ## Nafis handoff checklist
 
-- [ ] Original legacy metrics reproduced in the handoff environment.
-- [ ] Dataset provenance, access instructions and actual exclusions recorded.
-- [ ] Real identity/split/validation/test-trial manifests saved and checked for leakage.
-- [ ] Both modalities emit finite higher-is-better scores for the same keys/labels.
-- [ ] RQ1 script executes and saves measured scores, metrics, and labeled plots.
-- [ ] Relevant automated checks and reproduction commands pass.
-- [ ] Exact branch/commit, versions, unresolved issues and commands recorded in nafis_handoff.md.
+- [x] Original legacy metrics reproduced in the local Nafis environment.
+- [x] Dataset provenance, access instructions and actual exclusions recorded, including unresolved BMPD rights.
+- [x] Real identity/split/validation/test-trial manifests saved and checked for leakage.
+- [x] Both modalities emit finite higher-is-better scores for the same keys/labels.
+- [x] RQ1 script executes and saves measured scores, metrics, and labeled plots.
+- [x] Relevant automated checks and reproduction commands pass locally.
+- [x] Branch/implementation commits, versions, unresolved issues and commands recorded in nafis_handoff.md.
 
 ## Sakeeb intake and completion checklist
 

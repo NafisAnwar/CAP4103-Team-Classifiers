@@ -1,0 +1,22 @@
+{
+  "run_id": "rq1_20261112T151158Z_e192d8",
+  "metadata": "results/metrics/rq1_20261112T151158Z_e192d8/run_metadata.json",
+  "hash_format": "sha256_text_lf_binary_raw_v1",
+  "manifest_sha256": {
+    "config.json": "6864b459cac8497adedd6d7f80cdfc42977127ad9862c789e8de2947c8239c16",
+    "dataset_summary.json": "09d4598d61c9f16c9de70dac8c82dff237d491df70241679594fd4e1f89b3371",
+    "face_samples.csv": "469dbf86e5bfff1a56c409a0d174dcf19c68b15f7cfd4d71998e27a0322f411a",
+    "identity_mapping.csv": "3423b283a3cc39a5461f56995dc25a193d61d47b6f6170227974bbaa09896786",
+    "palm_samples.csv": "5bbff63ddd66b29dfffee1899775ca14bfa8a821a2dce09449053247372a0878",
+    "palm_subject_counts.csv": "6be5c06e9c0a23cdc791070b3adc0ebb68294f7bbdef64e144e47b6ed0cf92fb",
+    "partitions.csv": "80ab81057fb33804b886f48d619c16e3f44edb9e416c0cbc058a8cf6242a5d27",
+    "test_trials.csv": "79a5a27451c3c0ff6dcd12a2fea81881fd05e0d37eb4f55a219f18a66a4bda9b",
+    "validation_trials.csv": "7362fd31bd3b1a7e260f5c78eec9c99c2d0c11b5ab9268af33cb04bde899ea12"
+  },
+  "metadata_sha256": "c20839335f52ad6f5f51f40885b06b9ae78d2738fd4254edb95e3bf3d1757203",
+  "score_sha256": {
+    "validation_scores.csv": "19df05eced0d0fd6262b8e218e85b81eaa6a4c89f7eb7bdf4445e97431b4ed1c",
+    "rq1_baseline_scores.csv": "52070523ee7ddeb9ae2ef2ac9f73183d438a1eb7ae4f05b1e8985de8432b9cca"
+  },
+  "acceptance_scope": "verified Nafis baseline; Sakeeb teammate acceptance is still pending"
+}

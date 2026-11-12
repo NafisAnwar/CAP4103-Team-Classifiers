@@ -4,7 +4,7 @@ from PIL import Image, ImageOps, ImageDraw
 import hashlib
 import re
 import numpy as np
-from src.files import ROOT, write_csv, write_json
+from src.files import ROOT, write_csv, write_json, guard_manifest_rebuild
 from src.preprocessing import palm_roi, crop_palm
 
 PALM_NAME = re.compile(r'(?P<subject>\d{3})_(?P<session>[FS])_(?P<hand>[LR])_(?P<number>\d+)\.JPG', re.I)
@@ -30,8 +30,37 @@ def load_faces(root=ROOT):
     return images, labels
 
 
-def audit_datasets(root=ROOT):
+def dataset_images(partitions, split, root=ROOT):
     root = Path(root)
+    if split not in ['enrollment', 'validation', 'test']:
+        raise ValueError('Unknown image split')
+    faces, _ = load_faces(root)
+    result = {'face': {}, 'palm': {}}
+    for row in partitions:
+        if row['split'] != split:
+            continue
+        sample, modality = row['original_sample_id'], row['modality']
+        if modality == 'face':
+            image = faces[int(row['source_path_or_key'].rsplit('#', 1)[1])]
+            digest = hashlib.sha256(image.tobytes()).hexdigest() #use the same decoded pixels as the audit
+        elif modality == 'palm':
+            with Image.open(root / row['source_path_or_key']) as source:
+                pixels = ImageOps.exif_transpose(source).convert('RGB')
+                digest = hashlib.sha256(str(pixels.size).encode() + pixels.tobytes()).hexdigest()
+                image = crop_palm(pixels) #keep the original crop unchanged for frozen models
+        else:
+            raise ValueError('Unknown image modality')
+        if digest != row['pixel_sha256']:
+            raise ValueError(f'Sample changed since audit: {sample}')
+        if sample in result[modality]:
+            raise ValueError(f'Repeated image sample: {sample}')
+        result[modality][sample] = image
+    return result
+
+
+def audit_datasets(root=ROOT, rebuild=False):
+    root = Path(root)
+    guard_manifest_rebuild(root, ['face_samples.csv', 'palm_samples.csv', 'palm_subject_counts.csv', 'dataset_summary.json'], rebuild)
     images, labels = load_faces(root)
     faces, seen = [], {}
     for index, (image, label) in enumerate(zip(images, labels)):

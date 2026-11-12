@@ -47,4 +47,8 @@ From the VS Code project-root terminal:
 .\.venv\Scripts\python.exe experiments/rq1_baseline.py
 ```
 
-On another checkout, create Python 3.13 .venv and install requirements-lock.txt, run scripts/download_data.py, scripts/audit_data.py and scripts/build_protocol.py in that order, then the commands above. The committed manifests pin the current study; rebuilding them should be reviewed, and modified manifests must not be mixed with old model/results files.
+On another checkout, create Python 3.13 .venv, install requirements-lock.txt and run scripts/download_data.py. Keep the committed manifests and protocol_lock.json for reproduction; the experiment verifies their bytes and the decoded source images. Audit/build commands are for a new study or an intentional revision and refuse existing manifests by default. Use scripts/audit_data.py --rebuild followed by scripts/build_protocol.py --rebuild only when intentionally replacing the study. Review changes before accepting any new baseline.
+
+The refactored RQ1 uses shared verified image loading and enrollment/scoring helpers. Models, matching, preprocessing, candidates and numerical evaluation are unchanged. Evaluator score descriptions can be supplied by later normalized/fusion callers. The accepted baseline pointer pins metadata and score hashes separately from latest-run discovery; the frozen loader also checks the feature/matching source, enrollment IDs and model bytes.
+
+New runs capture provenance before work, record running/completed/failed status, recheck input hashes at completion and hash required artifacts. JSON writes replace files atomically. A forced termination may leave running status, so only completed runs should be consumed. The regular legacy check runs byte-identical copies in a temporary directory and leaves saved project evidence untouched; scripts/verify_legacy.py --export explicitly replaces that evidence.

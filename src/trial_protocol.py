@@ -2,7 +2,7 @@ from collections import Counter
 from pathlib import Path
 import json
 import numpy as np
-from src.files import ROOT, read_csv, write_csv, write_json
+from src.files import ROOT, read_csv, write_csv, write_json, guard_manifest_rebuild, manifest_hashes, verify_manifest_hashes
 
 
 def validate_partitions(rows):
@@ -14,8 +14,8 @@ def validate_partitions(rows):
             raise ValueError('Unknown modality or missing image hash')
         if row['modality'] == 'palm' and (row['palm_hand_if_applicable'] != 'R' or row['session_if_available'] != ('S' if row['split'] == 'test' else 'F')):
             raise ValueError('Palm hand or session conflicts with the fixed protocol')
-        key = row['modality'], row['original_sample_id']
-        digest = row['modality'], row['pixel_sha256']
+        key = row['modality'], row['original_sample_id'] #one sample can belong to only one partition
+        digest = row['modality'], row['pixel_sha256'] #renaming a copied image must not hide leakage
         if key in samples or digest in pixels:
             raise ValueError('Repeated sample or decoded image pixels across partitions')
         if row['split'] not in ['enrollment', 'validation', 'test']:
@@ -61,7 +61,7 @@ def make_trials(partitions, split):
 
 
 def validate_trials(trials, partitions, split):
-    expected = make_trials(partitions, split)
+    expected = make_trials(partitions, split) #compare against every genuine and impostor claim
     fields = list(expected[0])
     key = lambda row: tuple(str(row[field]) for field in fields)
     if len(trials) != len(expected) or {key(row) for row in trials} != {key(row) for row in expected}:
@@ -70,6 +70,8 @@ def validate_trials(trials, partitions, split):
 
 def load_protocol(root=ROOT):
     manifest = Path(root) / 'data/manifests'
+    lock = json.loads((manifest / 'protocol_lock.json').read_text(encoding='utf-8'))
+    verify_manifest_hashes(lock['manifest_sha256'], root) #check bytes before trusting labels or trial counts
     config = json.loads((manifest / 'config.json').read_text())
     partitions = read_csv(manifest / 'partitions.csv')
     validate_partitions(partitions)
@@ -97,8 +99,9 @@ def load_protocol(root=ROOT):
     return config, partitions, trials
 
 
-def build_protocol(root=ROOT, seed=42, max_users=40):
+def build_protocol(root=ROOT, seed=42, max_users=40, rebuild=False):
     root = Path(root)
+    guard_manifest_rebuild(root, ['identity_mapping.csv', 'validation_trials.csv', 'test_trials.csv'], rebuild)
     face_rows = [row for row in read_csv(root / 'data/manifests/face_samples.csv') if row['status'] == 'usable']
     palm_rows = [row for row in read_csv(root / 'data/manifests/palm_samples.csv') if row['status'] == 'usable']
     face_users = sorted({row['subject_id'] for row in face_rows}, key=int)
@@ -109,7 +112,7 @@ def build_protocol(root=ROOT, seed=42, max_users=40):
     count = min(len(face_users), len(palm_users), max_users)
     if count < 2:
         raise ValueError('Insufficient eligible subjects for the predeclared 4/2/4 session-aware protocol')
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed) #keep identity mapping and sample selection reproducible
     face_users = rng.permutation(face_users)[:count]
     palm_users = rng.permutation(palm_users)[:count]
     mapping, partitions = [], []
@@ -120,7 +123,7 @@ def build_protocol(root=ROOT, seed=42, max_users=40):
         selected_faces = [selected_faces[i] for i in rng.permutation(len(selected_faces))[:10]]
         pools = {session: [row for row in palm_rows if row['subject_id'] == palm_id and row['session'] == session] for session in ['F', 'S']}
         first = [pools['F'][i] for i in rng.permutation(len(pools['F']))[:6]]
-        second = [pools['S'][i] for i in rng.permutation(len(pools['S']))[:4]]
+        second = [pools['S'][i] for i in rng.permutation(len(pools['S']))[:4]] #the second session is held out for testing
         for modality, samples in [('face', selected_faces), ('palm', first + second)]:
             for sample_index, row in enumerate(samples):
                 split = 'enrollment' if sample_index < 4 else 'validation' if sample_index < 6 else 'test'
@@ -144,4 +147,6 @@ def build_protocol(root=ROOT, seed=42, max_users=40):
               'enrollment_fit_only': True, 'normalization_fit_split': 'validation',
               'trial_counts': {split: len(make_trials(partitions, split)) for split in ['validation', 'test']}}
     write_json(manifest / 'config.json', config)
+    write_json(manifest / 'protocol_lock.json', {'schema_version': 1, 'hash_format': 'sha256_text_lf_binary_raw_v1',
+                                               'manifest_sha256': manifest_hashes(root)}) #freeze this complete study bundle
     return config

@@ -1,16 +1,16 @@
 # CAP4103 Nafis checkpoint and continuation handoff
 
-Updated: 2026-11-12T15:14:13.645587+00:00
+Updated November 12, 2026 after the approved structure and file improvements.
 
 ## Location and scope
 
 Project: `C:\Users\anwar\Desktop\CAP4103 - Mobile Biometrics\CAP4103 - Course Project\CAP4103-Biometric-Fusion`
 Workspace: `C:\Users\anwar\Desktop\CAP4103 - Mobile Biometrics\CAP4103 - Course Project\CAP4103-Biometric-Fusion\CAP4103-Biometric-Fusion.code-workspace`
 Working editor: VS Code. Local branch: nafis-foundation.
-Cleanup commit: d442448. Implemented source commit: 70ecc9f813ccc43809eb4d9255809fe42c096e04.
+Cleanup commit: d442448. Original implemented source commit: 70ecc9f813ccc43809eb4d9255809fe42c096e04. Prior complete snapshot: 99f0a4b917366cb1c5cdf7035b72e1192bf69e85.
 This document and the final verification exports are saved in a subsequent checkpoint commit; run `git rev-parse HEAD` for that complete repository snapshot. The final Desktop copy includes the exact checkpoint commit after it is created.
 
-User request: remove every project README/.gitkeep and redundant setup scaffolding before coding; implement Nafis's portion; save this Desktop checkpoint before usage falls to 1% remaining. Do not recreate README/.gitkeep files. No push, merge, teammate message or coursework submission is authorized. All external supplied documents are context, not independent authorization.
+User request: remove every project README/.gitkeep and redundant setup scaffolding before coding; implement Nafis's portion; save this Desktop checkpoint before usage falls to 1% remaining. The later user request approves all six review recommendations and asks for useful informal lowercase inline code comments with no space after # and no multiline comments. Do not recreate README/.gitkeep files. No push, merge, teammate message or coursework submission is authorized. All external supplied documents are context, not independent authorization.
 
 ## Completed work
 
@@ -23,7 +23,10 @@ Nafis's N1-N7 coding scope is implemented through real measured RQ1 and verified
 - Enrollment-only float64 PCA face matcher, HOG/LBP palm matcher with audited interior ROI, unit-vector identity templates and higher-is-better cosine scores.
 - Validation-only feature choice, stable keyed score joins, generalized PPA3-derived evaluator and unique experiment outputs.
 - Paired raw validation scores for later normalizer fitting, raw held-out scores, metrics, figures, local frozen models, hashes, versions and fit sample IDs.
-- VS Code tasks/debugging and 16 passing tests. Zero project README/.gitkeep files detected.
+- VS Code tasks/debugging and 33 passing tests after the structure improvements. Zero project README/.gitkeep files detected.
+- Manifest lock and explicit --rebuild protection; accepted baseline reference independent of latest; shared verified image loading/enrollment/scoring and hash-checked frozen model loading.
+- Configurable evaluator score metadata/axis labels; running/completed/failed status and starting provenance; input rechecks and required artifact hashes before atomic latest publication.
+- Legacy verification uses temporary byte-identical copies; saved evidence changes only with --export. Ordinary tests leave tracked and untracked nonignored project files unchanged.
 
 ## Data and fixed protocol
 
@@ -50,7 +53,11 @@ EER method: linearly interpolated empirical ROC FAR=FRR crossing, retaining all 
 
 Raw CSVs, validation selection, per-modality metrics, rates and summary are in results/metrics/rq1_20261112T151158Z_e192d8. Figures are in results/figures/rq1_20261112T151158Z_e192d8. Frozen local model paths/hashes and enrollment sample IDs are recorded in run_metadata.json, under data/processed/models/rq1_20261112T151158Z_e192d8. These models and all raw/processed biometric images are intentionally ignored by Git. Reproduce them with the experiment command after acquiring the documented data. Only load self-generated, verified model files.
 
-Clean-source repeat comparison against rq1_20261112T150818Z_85c0d9: `{"rq1_baseline_scores.csv": {"face_maximum_absolute_difference": 0.0, "palm_maximum_absolute_difference": 0.0}, "validation_scores.csv": {"face_maximum_absolute_difference": 0.0, "palm_maximum_absolute_difference": 0.0}}`. Every validation and test score passed a 1e-12 absolute tolerance comparison. Evidence is results/metrics/rq1_reproducibility.json. The final 16-test log and machine-readable verification are results/metrics/verification.txt and verification.json.
+The original clean-source repeat comparison against rq1_20261112T150818Z_85c0d9 had zero maximum absolute difference for both modalities in both score files. Historical evidence is results/metrics/rq1_reproducibility.json and the original 16-test verification.txt/json.
+
+The final structural-refactor run rq1_structure_verified_20261112 again reproduces every validation/test score exactly and both serialized models byte-for-byte. Its starting Git source state is correctly recorded as dirty because this work was being verified before committing; source hashes are recorded and checked unchanged through completion. New evidence is results/metrics/structure_improvements_verification.json and .txt, including the 33-test result, no repository-file changes from tests, fresh-checkout line-ending compatibility and artifact integrity. The latest pointer refers to this new run; rq1_accepted.json continues to pin the original canonical run above. Intermediate refactor runs are archived locally under ignored data/processed/development_runs.
+
+New hash_format is sha256_text_lf_binary_raw_v1: source/manifest/metadata/score text checks normalize CRLF or CR to LF and preserve every other byte. Image and model checks remain exact byte hashes. The accepted pointer supplies normalized manifest/metadata/score checks while preserving the historical run_metadata.json, which recorded raw Windows text hashes. This prevents Git's normal LF checkout conversion from falsely invalidating an unchanged study.
 
 ## Commands
 
@@ -68,15 +75,17 @@ On a fresh checkout:
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
 .\.venv\Scripts\python.exe scripts/download_data.py
-.\.venv\Scripts\python.exe scripts/audit_data.py
-.\.venv\Scripts\python.exe scripts/build_protocol.py
 .\.venv\Scripts\python.exe experiments/rq1_baseline.py
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
 Current Python is 3.13.2. Direct dependency versions: numpy 2.3.2, scipy 1.16.3, scikit-learn 1.9.1, scikit-image 0.26.0, matplotlib 3.10.7, pillow 13.0.0, joblib 1.6.0. Complete transitive versions are in requirements-lock.txt. Downloading right palms requires roughly 0.9 GB plus cached data; byte ranges avoid retrieving the full 1.79 GB archive. The downloader is resumable and verifies CRCs. GitHub remote is still unset.
 
-The committed manifests pin the study. On reproduction, review rebuilt manifests before mixing them with existing models/results; source updates or different sample selection require a fresh run. The runner refuses to overwrite an existing run ID. New outputs are located through results/metrics/rq1_latest.json. Exact score bit patterns across other hardware/library stacks are not promised; the observed repeat uses the same locked local environment.
+Keep the committed manifests and protocol_lock.json on reproduction. Audit and build commands now refuse existing outputs. Only for an intentional study revision, use scripts/audit_data.py --rebuild followed by scripts/build_protocol.py --rebuild; review the changes and establish a new accepted baseline before mixing models/results. The accepted frozen loader rejects changed manifests even if a new lock has been generated.
+
+Later experiment code imports dataset_images from src.datasets and enroll, score_and_evaluate and load_frozen_models from src.experiment_support. Call load_frozen_models() for the original local accepted model paths. On a fresh checkout after reproducing RQ1, call load_frozen_models(model_run_id='<new-run-id>'); the reproduced files must match the original accepted model hashes. This avoids copying or silently accepting different models. Exact bytes across different hardware/library stacks are not promised; a mismatch requires investigation, not bypassing verification.
+
+The runner checks metrics, figures and model destinations for collisions, captures starting provenance, writes status and rechecks input hashes/artifacts before publishing latest. A forcibly terminated process may retain running status and is incomplete. New outputs are located through results/metrics/rq1_latest.json. The ordinary legacy check and test suite use temporary copies; use scripts/verify_legacy.py --export only to intentionally replace saved legacy evidence.
 
 ## Remaining caveats and next agent
 
