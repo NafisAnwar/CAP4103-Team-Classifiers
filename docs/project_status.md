@@ -1,6 +1,6 @@
 # Nafis implementation status
 
-N1-N7 code and first measured RQ1 are implemented. Final integrity/reproducibility review is in progress; inspect the current Desktop handoff for the latest verified commit and checks. Sakeeb's acceptance of the handoff remains a separate step.
+N1-N7 code and first measured RQ1 are implemented. Final integrity review passed all 16 tests. A clean-source repeat run reproduced every validation/test face/palm score within 1e-12 absolute tolerance. See results/metrics/verification.json and rq1_reproducibility.json. Sakeeb's acceptance of the handoff remains a separate step.
 
 Completed: repository cleanup; byte-preserved runnable legacy code/data; public dataset retrieval and integrity/audit tools; 39-user artificial mapping; session-aware 4/2/4 partitions; fixed validation/test claim manifests; enrollment-only PCA face and HOG/LBP palm pipelines; validation model selection; keyed raw score exports; general evaluator and actual RQ1 metrics/figures. No README or .gitkeep files remain in project-owned source folders.
 

@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "reference_run": "rq1_20261112T150818Z_85c0d9",
+  "repeat_run": "rq1_20261112T151158Z_e192d8",
+  "source_commit": "70ecc9f813ccc43809eb4d9255809fe42c096e04",
+  "score_absolute_tolerance": 1e-12,
+  "score_comparisons": {
+    "rq1_baseline_scores.csv": {
+      "face_maximum_absolute_difference": 0.0,
+      "palm_maximum_absolute_difference": 0.0
+    },
+    "validation_scores.csv": {
+      "face_maximum_absolute_difference": 0.0,
+      "palm_maximum_absolute_difference": 0.0
+    }
+  }
+}

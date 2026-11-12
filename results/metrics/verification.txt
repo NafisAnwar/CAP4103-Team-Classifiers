@@ -1,0 +1,32 @@
+Caltech 5-landmark biometric authentication — PPA #3
+Total samples: 375, identities: 20
+Training templates: 251; testing queries: 124 (33%)
+Extracted feature shape: (251, 25) (25 distances per face)
+Matching probability matrix: (124, 20)
+Genuine scores: 124; impostor scores: 2356
+ROC AUC: 0.7569
+Equal Error Rate: 0.2612
+d-prime: 1.0973
+Plots saved to: C:\Users\anwar\Desktop\CAP4103 - Mobile Biometrics\CAP4103 - Course Project\CAP4103-Biometric-Fusion\ppa3_legacy\plots
+PASS: unchanged source, sample/claim counts, metrics and three generated figures
+test_palm_labels_are_explicit (test_datasets.DatasetTest.test_palm_labels_are_explicit) ... ok
+test_roi_rejects_missing_skin_and_crops_interior (test_datasets.DatasetTest.test_roi_rejects_missing_skin_and_crops_interior) ... ok
+test_invalid_inputs_fail (test_evaluation.EvaluationTest.test_invalid_inputs_fail) ... ok
+test_perfect_separation_on_negative_and_positive_similarity_scales (test_evaluation.EvaluationTest.test_perfect_separation_on_negative_and_positive_similarity_scales) ... ok
+test_tied_scores_and_reversed_direction_are_visible (test_evaluation.EvaluationTest.test_tied_scores_and_reversed_direction_are_visible) ... ok
+test_exported_scores_exactly_cover_the_manifest_and_reproduce_metrics (test_experiment_integrity.ExperimentIntegrityTest.test_exported_scores_exactly_cover_the_manifest_and_reproduce_metrics) ... ok
+test_frozen_models_use_only_enrollment_and_reproduce_a_probe (test_experiment_integrity.ExperimentIntegrityTest.test_frozen_models_use_only_enrollment_and_reproduce_a_probe) ... ok
+test_unchanged_ppa3_reproduces_counts_metrics_and_figures (test_legacy_regression.LegacyRegressionTest.test_unchanged_ppa3_reproduces_counts_metrics_and_figures) ... ok
+test_face_model_is_repeatable_and_scoring_does_not_refit (test_matching.MatchingTest.test_face_model_is_repeatable_and_scoring_does_not_refit) ... ok
+test_paired_raw_scores_join_on_keys_and_reject_corruption (test_matching.MatchingTest.test_paired_raw_scores_join_on_keys_and_reject_corruption) ... ok
+test_palm_feature_dimensions_and_finite_scoring (test_matching.MatchingTest.test_palm_feature_dimensions_and_finite_scoring) ... ok
+test_sorted_classes_and_claim_lookup_independent_of_probe_order (test_matching.MatchingTest.test_sorted_classes_and_claim_lookup_independent_of_probe_order) ... ok
+test_claim_labels_missing_rows_and_wrong_split_are_rejected (test_protocol.ProtocolTest.test_claim_labels_missing_rows_and_wrong_split_are_rejected) ... ok
+test_duplicate_pixels_across_splits_are_rejected (test_protocol.ProtocolTest.test_duplicate_pixels_across_splits_are_rejected) ... ok
+test_mapping_or_palm_session_corruption_is_rejected (test_protocol.ProtocolTest.test_mapping_or_palm_session_corruption_is_rejected) ... ok
+test_seeded_manifest_is_repeatable_and_session_separated (test_protocol.ProtocolTest.test_seeded_manifest_is_repeatable_and_session_separated) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 3.107s
+
+OK
