@@ -27,7 +27,7 @@ Nafis implements N1-N7 before transfer (60 units). Sakeeb implements S1-S5 after
 - [x] Both modalities emit finite higher-is-better scores for the same keys/labels.
 - [x] RQ1 script executes and saves measured scores, metrics, and labeled plots.
 - [x] Relevant automated checks and reproduction commands pass locally.
-- [x] Branch/implementation commits, versions, unresolved issues and commands recorded in nafis_handoff.md.
+- [x] Branch/implementation commits, versions, unresolved issues and commands recorded in nazmus_handoff.md.
 
 ## Sakeeb intake and completion checklist
 

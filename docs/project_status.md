@@ -13,3 +13,5 @@ Actual latest outputs are located by results/metrics/rq1_latest.json. results/me
 Source caveat: BMPD Kaggle license metadata is Unknown, even though the course preapproves the dataset. No redistribution permission is claimed; raw images, contact sheets and frozen models remain ignored/local. The heuristic ROI lacks rotation/anatomical alignment. See methodology.md for the actual controls and limitations.
 
 Next after Nafis review: Sakeeb reproduces the exact accepted checkpoint, then implements validation-only normalization and keyed 50/50 fusion (RQ2), face-probe blur with fixed palms/models (RQ3), and final engineering QA. No fusion/blur code is included yet. GitHub remote and final submission requirements remain unconfirmed; no push or submission occurred.
+
+Final transfer cleanup: Nafis N1-N7 implementation is complete (60/60 assigned effort units). Nazmus S1-S5 remains (40/100 planned engineering units); group report/presentation and teammate acceptance remain separate. Start with docs/nazmus_handoff.md or docs/nazmus_handoff.txt. Session-only notes were removed from the repository and retained separately.
