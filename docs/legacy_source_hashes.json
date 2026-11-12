@@ -1,7 +1,6 @@
 {
   "main.py": "c93e1dce6b2aba583294b05c56410ce2559b1b25171822260b6df0173f434302",
   "performance.py": "90fafd1a289cdce9f83ffecf183755f7b4355dbce1d5af5f1ce6b90317be19ea",
-  "README.txt": "8c75acebf211222cdbd8090f1ff83778a38a7e46a8f6d0edf3fc67859b540d60",
   "requirements.txt": "cc7b390e266a908c3e1fefd41ce65bf6b10155061af62694349296394bd45dd7",
   "X-5-Caltech.npy": "652b1d98140daaa46c5c5e6d80d3eba2e810cae9ab53f8c6e1e7e4b3a19ec876",
   "y-5-Caltech.npy": "d3abf4f45269c9e9b6e47d64c7fe0a006cf06265aa20b00f48aed3469e06e438"

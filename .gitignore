@@ -5,7 +5,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .coverage
-htmlcov/
 .env
 .env.*
 !.env.example
@@ -15,13 +14,8 @@ htmlcov/
 Thumbs.db
 work/
 tmp/
-data/raw/**
-!data/raw/**/
-!data/raw/**/.gitkeep
-data/processed/**
-!data/processed/**/
-!data/processed/**/.gitkeep
+data/raw/
+data/processed/
 ppa3_legacy/plots/
 docs/reference/*
-!docs/reference/README.md
 !docs/reference/source_inventory.json

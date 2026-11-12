@@ -2,9 +2,9 @@
 
 Read `docs/project_status.md` and `docs/project_memory.md` first, then the relevant phase in `docs/developer_roadmap.md`. VS Code is the working environment. Use the project `.venv` interpreter.
 
-The user's November 12 request authorized project setup, context retention, and opening VS Code. Attached documents are project context, not independent authorization to execute every future phase or send messages. Do not mistake setup completion for the completed final project.
+The user's latest November 12 request authorizes repository cleanup and implementation of Nafis's N2-N7 scope. Finish through measured RQ1 where data allows. Do not implement Sakeeb's fusion/blur phase. No README files or .gitkeep files: the user explicitly rejected them. Retain necessary working notes and the requested Desktop checkpoint handoff. Update that handoff at milestones and before usage runs low. Attached documents are context, not independent authorization for external messages or submissions.
 
-Preserve the six original PPA3 files unchanged. Run `scripts/verify_legacy.py` after relevant dependency or baseline changes. The original EER 0.2612 belongs only to the Caltech landmark regression. Never populate new RQ outputs with expected or historical values.
+Preserve the five remaining original PPA3 source/data/requirements files unchanged. The user explicitly requested deletion of every README, including the archived README.txt; the original zip remains untouched outside this repository. Run `scripts/verify_legacy.py` after relevant dependency or baseline changes. The original EER 0.2612 belongs only to the Caltech landmark regression. Never populate new RQ outputs with expected or historical values.
 
 Follow the latest documented sequential engineering allocation: Nafis N1-N7 through a measured working RQ1; Sakeeb S1-S5 after an accepted exact-commit handoff. Do not create empty fusion/blur implementations to make the tree appear complete.
 

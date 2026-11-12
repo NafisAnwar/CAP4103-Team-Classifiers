@@ -41,3 +41,7 @@ Never reuse legacy EER as a new dataset result, claim Gaussian blur faithfully m
 ## Verified setup checkpoint
 
 N1 baseline was executed successfully in isolated Python 3.13.2. All six original source/data hashes match. AUC 0.7569, approximate EER 0.2612, d-prime 1.0973; 251 enrollment and 124 test samples, 124 genuine and 2,356 impostor claims. The regression test passed and three plots were generated. Exact environment versions are locked in requirements-lock.txt. The VS Code workspace, README and developer roadmap were observed open. Local branch: nafis-foundation. N2 is the next implementation phase; the completed 60% handoff remains pending.
+
+## Latest request: implementation and cleanup
+
+The user authorized Nafis N2-N7 code implementation after cleanup, requested removal of every project README and .gitkeep, and requested a checkpoint Markdown on Desktop before the five-hour limit reaches 1% remaining. The legacy README was removed under this explicit instruction; five runnable source/data/requirements files remain byte-identical. No new README files should be created. Redundant setup placeholders were removed. Account usage is available through get_usage_limits; check at milestones.
