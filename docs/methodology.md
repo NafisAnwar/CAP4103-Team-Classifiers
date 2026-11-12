@@ -1,0 +1,50 @@
+# Implemented RQ1 methodology
+
+This is the implemented Nafis baseline, not a description of future fusion/blur work.
+
+## Sources and audit
+
+The October 15 course PDF lists Olivetti and BMPD as preapproved datasets. Olivetti is loaded through [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html): 400 original 64x64 grayscale images, 40 subjects, 10 images each. The downloaded array contains no exact decoded-pixel duplicates.
+
+BMPD is downloaded from the [creator's public Kaggle listing](https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd). The archive actually contains 1,612 entries, including 812 explicitly named right-palm images from 41 subjects. The listing's description says 1,640 images; its capture counts also do not fully match the archive. Actual filenames, CRC-verified bytes, decoded pixels and session labels govern this implementation. F and S are treated as first/second session tokens. No left palms enter the experiment.
+
+The decoded-pixel audit identified 56 exact duplicate right-palm images and five additional images whose final 128x128 palm ROI standard deviation is below 0.02. After these exclusions 751 unique usable right-palm images remain. No cross-subject exact pixel duplicates were found. Exact deduplication does not establish the absence of near-duplicate acquisitions.
+
+Kaggle's license field is Unknown. Public download and course preapproval are documented; redistribution permission has not been established. Raw images, ROI contact sheets and frozen feature/model files stay local and are excluded from Git. Before publication or sharing images, the team must resolve source usage terms. Source article: Izadpanahkakhk et al., Novel mobile palmprint databases for biometric authentication, 2019, [DOI](https://doi.org/10.1504/IJGUC.2019.102016).
+
+## Palm preprocessing
+
+Visual inspection rejected a fixed center crop because it often included fingers/background. The final method converts EXIF-oriented RGB images to a thumbnail with maximum side 512, segments skin using R>0.12, Cr>0.53, R>G and R>B, closes small gaps, retains the largest component and fills internal holes. Its maximum distance-transform location defines the palm center. A conservative square whose side equals that distance is cropped from the full-resolution grayscale image and bilinearly resized to 128x128. Minimum source crop side is 64 pixels. The algorithm is fixed across all subjects/splits.
+
+Five contact sheets with representative first/second-session captures and crops covering all available subjects were reviewed before fitting. This is a heuristic interior crop, without anatomical landmarks or explicit rotation alignment. Variable pose, shadows and occasional edge background remain limitations. It should not be described as a validated anatomical ROI detector or an exhaustive manual review of every capture.
+
+## Shared identity and claim protocol
+
+Seed 42 selects/maps distinct source identities under explicitly artificial shared labels. These face and palm captures are from different physical people. Subjects 001 and 021 lack the required distinct second-session palm captures, leaving 39 eligible palm subjects paired with 39 of the 40 Olivetti subjects. The mapping is persisted, not regenerated during experiment execution.
+
+Each modality/user has four enrollment, two validation and four test samples. Palms use only F-session images for enrollment/validation and only S-session images for testing. Face session labels are unavailable, so their samples use a seeded within-user split. Every selected decoded image and sample ID occurs in just one partition. Enrollment/validation share a palm session, so validation quality does not fully characterize the cross-session test shift.
+
+Each validation/test face probe is paired with a same-simulated-user palm probe, then compared against all 39 claimed identities. Validation: 78 genuine and 2,964 impostor claims (3,042 total). Test: 156 genuine and 5,928 impostor claims (6,084 total). Ground truth is true simulated ID equals claimed simulated ID. CSV rows use unique trial_id plus claimed_user_id keys. Modality joins validate keys and labels; they never rely on incidental row order.
+
+## Features, fitting and validation selection
+
+Face PCA is fit on the 156 enrollment images only, with float64 arithmetic, randomized SVD, seed 42 and no whitening. Candidate component counts are 16, 32 and 64. Palm candidates are HOG (9 orientations, 16x16 pixels/cell, 2x2 cells/block, L2-Hys, square-root transform, 1,764 features) and uniform LBP (16 neighbors, radius 2, 4x4 spatial histograms with 18 bins each and square-root normalization, 288 features).
+
+For each modality, each enrollment feature vector is L2-normalized, vectors are averaged within identity, then templates are L2-normalized. Probe-template cosine similarity is finite and higher-is-better. Similarities are not calibrated probabilities. Candidates are chosen by the lowest validation EER with positive genuine/impostor mean direction. Ties use the first candidate. Within the RQ1 runner, no test image is loaded or scored until those choices are frozen. The prior dataset audit decodes images for quality and duplicate checks, without model fitting or EER-guided preprocessing. The executed run selected 64 face components and HOG palms.
+
+## Evaluation and reproduction
+
+The new evaluator extends PPA3's genuine/impostor labeling, pooled-variance d-prime and FAR/FRR/ROC structure while removing probability-range and Caltech-only plot assumptions. Final EER is the linearly interpolated FAR=FRR crossing on the empirical ROC with all distinct thresholds retained. AUC uses the same score direction. It is explicitly different from legacy PPA3's nearest point on a 500-threshold grid. Tied/discrete scores can yield an interpolated EER that no single deterministic threshold attains. Zero-variance d-prime is null for separated constants and zero for identical constants.
+
+Each experiment writes a unique metrics/figures directory and refuses to overwrite an existing run ID. Outputs include paired raw validation/test scores, validation model comparisons, ROC and FAR/FRR curves, score distributions, summary metrics, manifest/source hashes, fit sample IDs and package versions. Local joblib files freeze the chosen enrollment models for Sakeeb's intake and blur experiments. Only load these self-generated, hash-verified joblib files; they are not general untrusted model inputs.
+
+Results are descriptive for this small selected population. No uncertainty interval, broad demographic fairness or deployable accuracy claim is made. RQ2 must assess whether equal-weight fusion helps rather than assume it; RQ3 must preserve the mapping, manifests, models, enrollment and validation-trained normalizers while blurring only raw face test probes. Neither RQ2 nor RQ3 is implemented in this scope.
+
+From the VS Code project-root terminal:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe experiments/rq1_baseline.py
+```
+
+On another checkout, create Python 3.13 .venv and install requirements-lock.txt, run scripts/download_data.py, scripts/audit_data.py and scripts/build_protocol.py in that order, then the commands above. The committed manifests pin the current study; rebuilding them should be reviewed, and modified manifests must not be mixed with old model/results files.

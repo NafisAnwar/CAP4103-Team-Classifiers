@@ -1,47 +1,25 @@
 # Persistent project memory
 
-Recorded November 12, 2026. These local project notes persist across sessions; this is not a claim of account-wide or cloud memory.
+Updated November 12, 2026. VS Code is the working editor. This repository is the CAP4103-Biometric-Fusion child of Desktop/CAP4103 - Mobile Biometrics/CAP4103 - Course Project. Read AGENTS.md and project_status.md before work.
 
-## User request and working environment
+The user explicitly requested removal of every project README and .gitkeep, then implementation of Nafis's portion, plus a Desktop Markdown continuation checkpoint before the account's five-hour allowance reaches 1% remaining. Do not recreate README files. Local usage can be checked through the Codex get_usage_limits tool. The checkpoint is C:/Users/anwar/Desktop/CAP4103_Nafis_Checkpoint_Handoff.md. No instruction authorizes messages, pushes, merges or coursework submission.
 
-The user asked to read context, create project subfolders, set up the overall project with particular attention to Nafis and Sakeeb, retain context, and open the result in Visual Studio Code. The active course directory is `Desktop/CAP4103 - Mobile Biometrics/CAP4103 - Course Project`. The development repository is its `CAP4103-Biometric-Fusion` child. Current scope is setup/N1, not execution of all 100 engineering units.
+Title: Combining Face and Palmprint Scores for Authentication Under Image Blur. Nafis owns N1-N7 (60 engineering effort units): both initial modality pipelines and measured RQ1. Nazmus Sakeeb owns S1-S5 (40 units) only after accepting/reproducing that handoff: validation normalization, equal-weight fusion, face-probe blur, RQ2/RQ3 and final engineering QA. These are effort estimates, not grades. Diego leads research/methodology; Mikaela results/report; Sienah presentation, ethics/references and QA.
 
-## Context and evidence hierarchy
+Newer supplied handoff/implementation plan supersedes the original pasted broad palm assignment to Nazmus. Unmodified source documents remain locally under docs/reference (ignored). The October 15 PDF requires three connected questions, HW3 evaluation, fusion and preapproved datasets, including Olivetti/BMPD. The handoff reports a later instructor relaxation of mandatory face/multimodality, but the original announcement was not supplied. The selected project is retained. Due date, presentation rubric, team remote and sharing links are unconfirmed.
 
-`docs/reference/` retains the original handoff Markdown, detailed implementation plan, October 15 course PDF, earlier brainstorming PDF, and pasted team plan. These are reference material. The supplied Desktop and course-folder Project_Description.pdf were identical by SHA-256 at setup.
+RQ1 compares original usable unblurred face/palm systems. RQ2 tests whether equal-weight normalized score fusion improves, worsens or ties those baselines. RQ3 increases Gaussian blur only on held-out face probe pixels with palms/trials/enrollment/models/normalizers frozen. Never presume a positive fusion outcome. Gaussian blur models lost sharpness, not physical motion blur.
 
-The October PDF explicitly requires three connected questions, HW3 evaluation, fusion and preapproved datasets. Olivetti and BMPD are on its list. The later handoff reports a November instructor announcement relaxing mandatory face/multimodality; that announcement itself was not supplied or independently verified. Record it as reported context. The selected face+palm project remains unchanged and satisfies the older scope too. Presentation duration, rubric, due date, and remote repository URL remain unconfirmed.
+Original PPA3 ZIP has landmark coordinates, not raw images. Its remaining five archived source/data/requirements files are byte-identical; the legacy README was removed under the user's explicit newer instruction, while the original ZIP remains untouched. Legacy baseline AUC 0.7569, grid EER 0.2612, d-prime 1.0973 still reproduces. Do not reuse those as image results.
 
-The newer handoff updates the older broad team responsibilities: Nafis owns both first modality baselines and RQ1 before Sakeeb takes the final 40%. The effort shares do not describe course grades or the contributions of the other three teammates.
+Actual image setup: 400 Olivetti images; BMPD public ZIP has 1,612 entries and 812 right-palm images from 41 subjects. Final audit excludes 56 exact decoded-pixel duplicates and five low-contrast ROIs, leaving 751 unique usable palms. 39 subjects meet at least six distinct F plus four S capture requirements; 001 and 021 are excluded. Seed 42 maps these to 39 of the 40 face subjects under artificial shared IDs. They are different physical people.
 
-## Project decisions
+Each user/modality: four enrollment, two validation, four test images. Palms F enrollment/validation, S test; face sessions unavailable. Validation: 3,042 claims (78 genuine); test: 6,084 (156 genuine, 5,928 impostor). Committed manifests define the study. Keys are unique trial_id plus claimed_user_id, labels from equality of simulated true/claimed IDs. No duplicate sample/pixels across splits.
 
-Title: Combining Face and Palmprint Scores for Authentication Under Image Blur.
+The initial center crop was visually rejected before fitting. Final ROI uses a largest skin mask and maximum-distance palm center with conservative interior square, resized 128x128. Five F/S representative contact sheets were inspected. It lacks anatomical/rotation alignment; near duplicates and source rights remain limitations. Kaggle license is Unknown; public access and course preapproval do not establish redistribution permission. Images, contact sheets, and local frozen models are ignored by Git.
 
-RQ1 compares face-only and palmprint-only EER under original usable unblurred conditions. RQ2 compares equal-weight normalized score fusion against both on corresponding claims. RQ3 progressively blurs only held-out face probes while palms and all learned transforms stay fixed. Interpret each result before refining the next RQ. Fusion improvement is a question, not an assumption.
+Face candidate PCA dimensions 16/32/64 and palm HOG/LBP are selected on validation only. PCA/templates fit enrollment only. Unit vectors are averaged per identity and normalized; cosine scores are higher-is-better, not probabilities. The first actual RQ1 selected PCA64/HOG and measured EER 0.0895748987854251 face, 0.2380229419703104 palm. Exact numerical outputs, versions, source/manifest hashes and fit IDs are stored in unique run directories, found via results/metrics/rq1_latest.json. Final evaluator uses empirical-ROC interpolation, explicitly different from PPA3's grid method.
 
-Preserve PPA3 and extend its score labeling/evaluation architecture. The archive holds 375 samples of five landmark coordinates and 20 identities; it contains no raw face images. Do not attempt Gaussian image blur on those coordinates.
+Style: readable Python, lowercase short # comments, no decorative blocks or em dashes in generated prose. Use .venv/Scripts/python.exe without changing execution policy. Run unittest discovery and actual commands before claiming success. Keep raw data, environments, secrets and private source documents out of Git. No remote has been set.
 
-Proposed image approach: Olivetti with PCA and similarity templates; BMPD right palms with visually audited ROI and LBP or HOG. These choices remain proposals until actual data/validation evidence supports them. No new image models are implemented during setup.
-
-Use a fixed, explicitly artificial face-to-palm identity mapping between different real people. Target up to 40 usable subjects, provisionally 4 enrollment/2 validation/4 test images per modality, seed 42. Actual feasibility, counts, image quality, sessions, data rights, and palm-side parsing are unverified. Tentative blur sigma values are 0, 0.8, 1.6, 2.4, requiring visual review before test analysis.
-
-Scores must be finite, higher-is-better, and keyed by stable trial_id plus claimed_user_id. Keep raw and normalized scores distinct. No enrollment/validation/test overlap. Validation-only normalizers stay frozen across blur levels; fusion is exactly 0.5*face_normalized + 0.5*palm_normalized. Sigma zero must match RQ2; palm scores/EER must remain invariant.
-
-## Team
-
-Nafis Anwar: lead developer/coordinator, first 60 engineering units through runnable RQ1. Nazmus Sakeeb: developer/evaluation lead, final 40 units after handoff. Diego: research/methodology. Mikaela: results/report. Sienah: presentation, ethics/references, QA. No messages were sent to teammates during setup.
-
-## Reporting and limits
-
-Course report: maximum five pages including visuals, excluding references; 11pt Arial/Calibri, single spaced, justified, one-inch margins; numbered pages/figures/tables; 14pt centered title and left bold section headings; references on a separate page with persistent URLs. Ethics: up to three paragraphs, at least three credible citations connected to this system. Optional annotated bibliography requires at least four relevant research articles. Submission work remains pending.
-
-Never reuse legacy EER as a new dataset result, claim Gaussian blur faithfully models motion blur, describe simulated pairs as the same people, or imply broad fairness/deployment performance from small datasets.
-
-## Verified setup checkpoint
-
-N1 baseline was executed successfully in isolated Python 3.13.2. All six original source/data hashes match. AUC 0.7569, approximate EER 0.2612, d-prime 1.0973; 251 enrollment and 124 test samples, 124 genuine and 2,356 impostor claims. The regression test passed and three plots were generated. Exact environment versions are locked in requirements-lock.txt. The VS Code workspace, README and developer roadmap were observed open. Local branch: nafis-foundation. N2 is the next implementation phase; the completed 60% handoff remains pending.
-
-## Latest request: implementation and cleanup
-
-The user authorized Nafis N2-N7 code implementation after cleanup, requested removal of every project README and .gitkeep, and requested a checkpoint Markdown on Desktop before the five-hour limit reaches 1% remaining. The legacy README was removed under this explicit instruction; five runnable source/data/requirements files remain byte-identical. No new README files should be created. Redundant setup placeholders were removed. Account usage is available through get_usage_limits; check at milestones.
+Report constraints from supplied PDF: maximum five pages including visuals excluding references; 11pt Arial/Calibri, one-inch margins, single spaced and justified; numbered pages/figures/tables; 14pt title/headings, references separate with persistent URLs. Ethics: up to three paragraphs, at least three credible citations tied to this system. Optional annotated bibliography: four relevant articles. Report/presentation generation remains outside the implemented developer baseline.

@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "subjects": 39,
+  "mapping": "artificial_between_different_people",
+  "split_per_modality_per_user": {
+    "enrollment": 4,
+    "validation": 2,
+    "test": 4
+  },
+  "palm_session_policy": "F enrollment/validation; S test, distinct decoded pixels",
+  "palm_subject_eligibility": "at least 6 unique usable F and 4 unique usable S captures",
+  "face_session_policy": "dataset provides no session labels; seeded within-subject split",
+  "enrollment_fit_only": true,
+  "normalization_fit_split": "validation",
+  "trial_counts": {
+    "validation": 3042,
+    "test": 6084
+  }
+}

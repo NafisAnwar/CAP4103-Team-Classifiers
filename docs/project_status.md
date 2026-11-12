@@ -1,22 +1,11 @@
-# Project status
+# Nafis implementation status
 
-Setup date: November 12, 2026. Scope: initial project foundation (N1).
+N1-N7 code and first measured RQ1 are implemented. Final integrity/reproducibility review is in progress; inspect the current Desktop handoff for the latest verified commit and checks. Sakeeb's acceptance of the handoff remains a separate step.
 
-Completed setup items: context reviewed and retained locally; directory structure; unchanged PPA3 source/data; environment requirements; regression utility and test; VS Code workspace, tasks, debugging; developer roadmap and team folders. Consult the measured legacy JSON and setup report for executed verification and commit ID.
+Completed: repository cleanup; byte-preserved runnable legacy code/data; public dataset retrieval and integrity/audit tools; 39-user artificial mapping; session-aware 4/2/4 partitions; fixed validation/test claim manifests; enrollment-only PCA face and HOG/LBP palm pipelines; validation model selection; keyed raw score exports; general evaluator and actual RQ1 metrics/figures. No README or .gitkeep files remain in project-owned source folders.
 
-| Phase | Owner | State |
-| --- | --- | --- |
-| N1: setup and PPA3 regression | Nafis | Complete: source hashes, counts, metrics and figures verified in isolated Python 3.13.2 |
-| N2: approved image data acquisition/quality audit | Nafis | Pending |
-| N3: mapped identities, partitions, fixed claims | Nafis | Pending |
-| N4: face-image authentication | Nafis | Pending |
-| N5: first palm-image authentication | Nafis | Pending |
-| N6: generic PPA3-derived evaluator | Nafis | Pending |
-| N7: measured RQ1 and accepted handoff | Nafis | Pending |
-| S1-S5: fusion, blur, final QA and packaging | Sakeeb | Waiting for complete N7 handoff |
+Actual outputs are located by results/metrics/rq1_latest.json. The first measured face EER is 0.0895748987854251 and palm EER is 0.2380229419703104, using interpolated empirical ROC EER. These are new image-dataset results, distinct from the legacy Caltech EER 0.2612.
 
-Next implementation task: N2, verify permitted Olivetti/BMPD access, labels, right-palm parsing, sessions, actual counts, image quality, and dataset provenance. Only then finalize the protocol and create real manifests. No raw image datasets were downloaded for setup. No RQ1/RQ2/RQ3 numerical results exist.
+Source caveat: BMPD Kaggle license metadata is Unknown, even though the course preapproves the dataset. No redistribution permission is claimed; raw images, contact sheets and frozen models remain ignored/local. The heuristic ROI lacks rotation/anatomical alignment. See methodology.md for the actual controls and limitations.
 
-Open inputs: agreed team GitHub URL; BMPD source and permitted use; any updated course announcement/rubric and submission schedule. These inputs do not prevent local setup.
-
-Executed: `.venv\Scripts\python.exe -m unittest discover -s tests -v`, one regression test passed. Observed original PPA3 AUC 0.7569, EER 0.2612, d-prime 1.0973; 124 genuine and 2,356 impostor scores. Three legacy plots generated. These are historical Caltech-only measurements.
+Next after Nafis review: Sakeeb reproduces the exact accepted checkpoint, then implements validation-only normalization and keyed 50/50 fusion (RQ2), face-probe blur with fixed palms/models (RQ3), and final engineering QA. No fusion/blur code is included yet. GitHub remote and final submission requirements remain unconfirmed; no push or submission occurred.

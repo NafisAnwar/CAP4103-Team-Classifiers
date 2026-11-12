@@ -1,0 +1,28 @@
+{
+  "face": {
+    "samples": 400,
+    "subjects": 40,
+    "statuses": {
+      "usable": 400
+    }
+  },
+  "palm": {
+    "samples": 812,
+    "subjects": 41,
+    "statuses": {
+      "usable": 751,
+      "duplicate": 56,
+      "low_contrast_or_resolution": 5
+    }
+  },
+  "roi": {
+    "size": 128,
+    "method": "largest skin component, maximum-inscribed-circle interior square",
+    "skin_rule": "R > 0.12, Cr > 0.53, R > G and R > B; closing and hole fill at <=512 pixels",
+    "crop_side": "maximum distance to mask boundary, conservative central square"
+  },
+  "eligibility": "unique decoded pixels; minimum source side 128; palm crop side >=64; ROI std >= 0.02",
+  "bmpd_license_metadata": "Unknown; public download, course-preapproved dataset; redistribution permission not established",
+  "bmpd_source": "https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd",
+  "olivetti_source": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html"
+}
