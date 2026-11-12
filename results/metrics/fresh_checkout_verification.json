@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "git_archive_commit": "38620fddc2f5624c324ce01ab7d422e6c1777ab1",
+  "tests_run": 33,
+  "tests_skipped": 2,
+  "skip_reason": "two local model integration checks require ignored biometric data/models",
+  "files_changed_by_tests": [],
+  "scope": "actual Git archive with LF checkout text and no raw images, models or private documents"
+}

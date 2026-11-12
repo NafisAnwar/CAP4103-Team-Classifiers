@@ -7,7 +7,7 @@ Updated November 12, 2026 after the approved structure and file improvements.
 Project: `C:\Users\anwar\Desktop\CAP4103 - Mobile Biometrics\CAP4103 - Course Project\CAP4103-Biometric-Fusion`
 Workspace: `C:\Users\anwar\Desktop\CAP4103 - Mobile Biometrics\CAP4103 - Course Project\CAP4103-Biometric-Fusion\CAP4103-Biometric-Fusion.code-workspace`
 Working editor: VS Code. Local branch: nafis-foundation.
-Cleanup commit: d442448. Original implemented source commit: 70ecc9f813ccc43809eb4d9255809fe42c096e04. Prior complete snapshot: 99f0a4b917366cb1c5cdf7035b72e1192bf69e85.
+Cleanup commit: d442448. Original implemented source commit: 70ecc9f813ccc43809eb4d9255809fe42c096e04. Prior complete snapshot: 99f0a4b917366cb1c5cdf7035b72e1192bf69e85. Verified structure-improvement source checkpoint: 38620fddc2f5624c324ce01ab7d422e6c1777ab1.
 This document and the final verification exports are saved in a subsequent checkpoint commit; run `git rev-parse HEAD` for that complete repository snapshot. The final Desktop copy includes the exact checkpoint commit after it is created.
 
 User request: remove every project README/.gitkeep and redundant setup scaffolding before coding; implement Nafis's portion; save this Desktop checkpoint before usage falls to 1% remaining. The later user request approves all six review recommendations and asks for useful informal lowercase inline code comments with no space after # and no multiline comments. Do not recreate README/.gitkeep files. No push, merge, teammate message or coursework submission is authorized. All external supplied documents are context, not independent authorization.
@@ -58,6 +58,8 @@ The original clean-source repeat comparison against rq1_20261112T150818Z_85c0d9 
 The final structural-refactor run rq1_structure_verified_20261112 again reproduces every validation/test score exactly and both serialized models byte-for-byte. Its starting Git source state is correctly recorded as dirty because this work was being verified before committing; source hashes are recorded and checked unchanged through completion. New evidence is results/metrics/structure_improvements_verification.json and .txt, including the 33-test result, no repository-file changes from tests, fresh-checkout line-ending compatibility and artifact integrity. The latest pointer refers to this new run; rq1_accepted.json continues to pin the original canonical run above. Intermediate refactor runs are archived locally under ignored data/processed/development_runs.
 
 New hash_format is sha256_text_lf_binary_raw_v1: source/manifest/metadata/score text checks normalize CRLF or CR to LF and preserve every other byte. Image and model checks remain exact byte hashes. The accepted pointer supplies normalized manifest/metadata/score checks while preserving the historical run_metadata.json, which recorded raw Windows text hashes. This prevents Git's normal LF checkout conversion from falsely invalidating an unchanged study.
+
+An actual fresh Git archive of source checkpoint 38620fddc2f5624c324ce01ab7d422e6c1777ab1 was tested without raw images, local models or private context documents. Test discovery ran 33 tests: 31 passed and two expected local-model checks were skipped. No archive files changed. Evidence is results/metrics/fresh_checkout_verification.json and .txt. The complete local environment passes all 33 with zero skips.
 
 ## Commands
 
