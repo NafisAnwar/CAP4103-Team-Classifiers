@@ -1,6 +1,6 @@
 CAP4103 engineering handoff for Nazmus Sakeeb
 
-Prepared November 12, 2026. Project: Combining Face and Palmprint Scores for Authentication Under Image Blur. Working editor: VS Code. Branch: nafis-foundation. Verified source checkpoint before final document cleanup: df14796fa20bd3e0878417a6df9c62590d357027. The Desktop copies include the final cleanup commit after it is saved.
+Prepared November 12, 2026. Project: Combining Face and Palmprint Scores for Authentication Under Image Blur. Working editor: VS Code. Repository: https://github.com/NafisAnwar/CAP4103-Team-Classifiers. Transfer branch: main. Baseline upload checkpoint after the owner's email-privacy rewrite: f4710e5. Record the new main commit after these documents and any research assets are pushed. Earlier handoffs used commit IDs from before that rewrite; use current main ancestry for checkout.
 
 Completion and ownership
 
@@ -12,7 +12,7 @@ Start here
 
 The local project is C:/Users/anwar/Desktop/CAP4103 - Mobile Biometrics/CAP4103 - Course Project/CAP4103-Biometric-Fusion. Open CAP4103-Biometric-Fusion.code-workspace. On another computer use your checkout root. Read docs/project_status.md, docs/data_contracts.md, docs/methodology.md and docs/developer_roadmap.md.
 
-Use the project .venv interpreter. Current Python is 3.13.2; all dependency versions are in requirements-lock.txt. No remote is configured. Before work, verify the agreed commit and keep a separate branch for Nazmus's changes. Obtain team agreement on the handoff rather than assuming acceptance from the filename rq1_accepted.json.
+Use the project .venv interpreter. Current Python is 3.13.2; all dependency versions are in requirements-lock.txt. Origin is https://github.com/NafisAnwar/CAP4103-Team-Classifiers.git. The repository was shown as private; the owner must grant Nazmus access. Before work, verify the agreed commit and keep a separate branch for Nazmus's changes. Obtain team agreement on the handoff rather than assuming acceptance from the filename rq1_accepted.json.
 
 Existing local environment, from the project root:
 
@@ -48,7 +48,7 @@ Palm: HOG selected over LBP on validation; EER 0.2380229419703104 (23.80229%), A
 
 Both systems average unit enrollment vectors per identity, normalize the template and use higher-is-better cosine similarity. EER uses the linearly interpolated empirical ROC crossing. Original PPA3 landmark-only AUC/EER/d-prime are 0.7569/0.2612/1.0973, using its older threshold-grid method; those are not the image-system results.
 
-Each run's results/metrics/<run-id> contains validation_scores.csv, rq1_baseline_scores.csv, selection, summary, rates and run_metadata.json. Figures are under results/figures/<run-id>. Frozen local models are under data/processed/models/<run-id> and are not committed. Raw images, contact sheets, virtual environments and private reference documents are also excluded from Git.
+Each run's results/metrics/<run-id> contains validation_scores.csv, rq1_baseline_scores.csv, selection, summary, rates and run_metadata.json. Figures are under results/figures/<run-id>. Frozen models are under data/processed/models/<run-id>. Initially data/raw, data/processed, most docs/reference and legacy plots were ignored. The owner now has an optional full-assets preparation command; only after that is committed/pushed and git lfs pull succeeds will a clone include those files. The environment, credentials and caches always remain local. See docs/upload_guide.md.
 
 Read structure_improvements_verification.json/.txt and fresh_checkout_verification.json/.txt under results/metrics. The full local suite passed all 33 tests; a fresh Git archive passed its 31 available checks with two model/data checks skipped. All raw validation/test scores and both model files reproduced exactly in the locked local environment. Other hardware/library versions may differ; investigate discrepancies rather than bypassing integrity checks.
 
@@ -72,7 +72,7 @@ Nazmus's remaining work in order
 
 4. S4, 7 units: test validation-only normalizer fitting, frozen parameters, exact keyed coverage/labels, equal weights, finite scores, sigma-zero equivalence, unchanged palm scores/EER and model non-refitting. Reproduce runs and compare every score. Any separate palm improvement must be selected on validation and evaluated as a new experiment, without silently changing the frozen baseline. Do not tune against the already observed test EER.
 
-5. S5, 5 units: provide verified methods/results and figure/table references to the report/presentation team. Document limitations and negative findings. Finish dependency, provenance and reproducibility checks. Follow the user's no-README/no-placeholder-file preference; update the existing methods/status notes instead.
+5. S5, 5 units: provide verified methods/results and figure/table references to the report/presentation team. Document limitations and negative findings. Finish dependency, provenance and reproducibility checks. Maintain the requested root README plus existing methods/status notes; avoid empty placeholder documents and .gitkeep files.
 
 Suggested implementation locations: src/fusion.py, src/blur.py, experiments/rq2_fusion.py, experiments/rq3_blur.py and corresponding focused tests, created when implemented. These are proposed next files, not claims that they already exist.
 
@@ -80,6 +80,98 @@ Constraints and unresolved items
 
 BMPD is course-preapproved and publicly accessible, but Kaggle's license metadata is Unknown; redistribution permission is not established. Keep images/contact sheets/models local and resolve terms before distributing images. Artificial identities, exact-only deduplication, small subject count, heuristic ROI, session shift and no demographic analysis limit the conclusions.
 
-Preserve the five original PPA3 source/data/requirements files byte-for-byte. Keep seed 42. Use useful informal lowercase inline comments with no space after #. Do not commit environments, secrets, images or private source documents. No team messages, push, merge or submission has been authorized here.
+Preserve the five original PPA3 source/data/requirements files byte-for-byte. Keep seed 42. Use useful informal lowercase inline comments with no space after #. Do not commit environments or secrets. Sharing images/models/course documents requires appropriate source permissions. Use the documented LFS workflow for permitted research assets. No teammate messages or coursework submission are implied by this handoff.
 
-The supplied course PDF limits the report to five pages including visuals, excluding references; Arial/Calibri 11, one-inch margins, single spaced/justified, numbered pages/figures/tables and 14-point title/headings. Ethics is at most three paragraphs with at least three credible citations. Verify any later instructor changes directly. Due date, presentation rubric, remote/sharing links and source usage terms remain unresolved. Coding completion alone does not complete these group deliverables.
+The supplied course PDF limits the report to five pages including visuals, excluding references; Arial/Calibri 11, one-inch margins, single spaced/justified, numbered pages/figures/tables and 14-point title/headings. Ethics is at most three paragraphs with at least three credible citations. Verify any later instructor changes directly. Due date, presentation rubric and source usage terms remain unresolved. The repository URL is now configured; collaborator access still needs confirmation. Coding completion alone does not complete these group deliverables.
+
+Repository-first onboarding for Nazmus
+
+This section supersedes earlier branch/remote assumptions. The owner has pushed main, not a partial subset of tracked files. The original four excluded folders require a separate source download or the new optional LFS bundle.
+
+1. Clone and record the transfer checkpoint
+
+Accept the repository invitation first. Install Git/Git LFS, Python 3.13 and VS Code. In a folder where you keep projects:
+
+git lfs install
+git clone https://github.com/NafisAnwar/CAP4103-Team-Classifiers.git
+if ($LASTEXITCODE -ne 0) { throw 'Clone failed; check private repository access.' }
+Set-Location CAP4103-Team-Classifiers
+git switch main
+git pull --ff-only origin main
+if ($LASTEXITCODE -ne 0) { throw 'Cannot update main.' }
+git lfs pull
+if ($LASTEXITCODE -ne 0) { throw 'LFS download failed.' }
+git lfs fsck
+git rev-parse HEAD
+git status --short
+code CAP4103-Biometric-Fusion.code-workspace
+
+Record the full printed commit in your intake notes and future run metadata. Confirm the working tree is clean. Create your own branch; choose a different name if this one already exists:
+
+git switch -c nazmus-fusion-blur
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
+if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe scripts/check_environment.py
+
+2. Determine which assets you received
+
+With the owner's full bundle, these paths should exist: data/raw/face/olivetti.npz, data/raw/palm/images, data/processed/models/rq1_20261112T151158Z_e192d8/face.joblib and palm.joblib, plus the models for rq1_structure_verified_20261112. The original audited bundle has 812 right-palm JPGs. A .gitkeep file or LFS pointer is not a substitute for an image/model file.
+
+Test-Path data/raw/face/olivetti.npz
+Test-Path data/raw/palm/images
+Test-Path data/processed/models/rq1_20261112T151158Z_e192d8/face.joblib
+Test-Path data/processed/models/rq1_20261112T151158Z_e192d8/palm.joblib
+
+If assets were not uploaded, use scripts/download_data.py and reproduce RQ1. Keep the committed manifests. Do not run audit_data.py/build_protocol.py --rebuild as onboarding steps. If LFS files are still pointers, resolve git lfs pull/authentication/quota first. The downloader can need network access and substantial disk space; the local audited raw files total about 876 MiB. LFS also maintains a local object cache, so allow additional space beyond the working files and virtual environment.
+
+3. Validate intake before writing fusion
+
+.\.venv\Scripts\python.exe -B scripts/verify_legacy.py
+if ($LASTEXITCODE -ne 0) { throw 'Legacy regression failed.' }
+.\.venv\Scripts\python.exe -B -c "from src.trial_protocol import load_protocol; c, p, t = load_protocol(); print(c['subjects'], len(p), {s: len(v) for s, v in t.items()})"
+if ($LASTEXITCODE -ne 0) { throw 'Protocol verification failed.' }
+.\.venv\Scripts\python.exe -B -c "from src.experiment_support import load_frozen_models; m, d = load_frozen_models(); print(d['run_id'], sorted(m))"
+if ($LASTEXITCODE -ne 0) { throw 'Frozen-model verification failed.' }
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+if ($LASTEXITCODE -ne 0) { throw 'Tests failed.' }
+
+Expected protocol printout: 39 users, 780 partition rows, validation 3042 and test 6084 claims. Expected accepted run: rq1_20261112T151158Z_e192d8 with face and palm. With complete assets, all 33 tests should pass with zero skips. On source-only clones, two local-asset checks may skip; complete those checks before accepting the experimental baseline.
+
+If you acquired data from its source rather than LFS, run a new RQ1 experiment and then call load_frozen_models(model_run_id='<printed-run-id>'). Canonical model integration checks still refer to the accepted paths, so two skips can persist until those original local assets are available; the explicit loader and score comparison are required evidence for your reproduced run. Do not claim the skipped original-path tests passed.
+
+4. Reproduce scores without changing the accepted baseline
+
+Run experiments/rq1_baseline.py with an automatically generated fresh ID. It fits enrollment models and selects on validation again, preserving the accepted reference. Compare BOTH validation_scores.csv and rq1_baseline_scores.csv with the accepted run after joining by trial_id and claimed_user_id. Verify identical row coverage and truth labels, then measure the maximum absolute face/palm score difference. The local locked reference achieved 0.0 for all four comparisons. Use the existing evidence files as reference, not as proof of a run on your computer. Save your observed results and versions. Do not tune the models or normalizer on this test comparison.
+
+5. Implement S1 with a persistent normalization artifact
+
+Create a small Normalizer interface with fit(validation_scores), transform(scores), save and reload. Choose and document the normalization definition from validation only. A reasonable initial implementation is per-modality z-score using mean and population standard deviation of that modality's validation claim scores. This is a proposed starting choice, not an existing project decision. Handle zero/near-zero standard deviation explicitly; do not silently divide by zero. If using another rule, document its equation, fitting sample set, bounds and treatment of out-of-range test values.
+
+Store the chosen rule, parameters for both modalities, validation score hash, accepted baseline ID, manifest hashes, package versions and normalization version. Fit once and reuse unchanged for unblurred/blurred held-out conditions. There are many more impostor claims than genuine claims; document whether fitting uses all claims or a validation-defined balancing rule. Do not decide that policy from test performance.
+
+Use validation_scores.csv from the accepted run to fit. Transform its accepted test scores for RQ2 and compute exactly 0.5*face_normalized + 0.5*palm_normalized. Store face/palm raw scores, both normalized scores, fusion, keys, is_genuine and normalization_version. Reject duplicates, missing keys, label mismatches and nonfinite values. The evaluator accepts a custom description, for example score_type='equal_weight_normalized_fusion' and score_label='Normalized fusion score'. Compare EER/AUC/d-prime against both RQ1 modalities on identical claims.
+
+6. Implement S2 with an explicit sigma-zero path
+
+Load enrollment models with load_frozen_models; do not call fit during the blur sweep. Obtain only test face images from dataset_images(partitions, 'test'). Freeze original arrays, blur copies and pass those through the existing face model. Keep palm scores as the original keyed values. A SciPy Gaussian filter is a possible implementation; predeclare sigma values in source-image pixel units, boundary mode and truncation. Apply no new resizing, normalization or range scaling to face probes. At sigma zero, return an unchanged copy so the original values are preserved exactly.
+
+Choose/inspect severity levels using validation images, record the choice, then run the held-out sweep once. Reuse the S1 normalizer for every condition. Export docs/data_contracts.md's rq3_blur_scores schema, with unique trial/claim keys within each sigma. Compare sigma zero with RQ2 row-by-row; palm raw/normalized scores and palm metrics must stay invariant across all conditions.
+
+7. Tests and completion gates
+
+- Verify the normalizer reads validation only, handles constant values and round-trips its saved parameters.
+- Shuffle face/palm score rows to prove joins are keyed; missing/duplicate/mislabeled rows must fail.
+- Verify the fusion calculation uses exactly equal weights and preserves raw scores and labels.
+- Verify raw face arrays, original model parameters and enrollment/template state do not change during scoring.
+- Verify sigma zero matches unblurred RQ2 and every palm value is invariant.
+- Recompute exported metrics from exported scores and compare them to the saved summary.
+- Run the existing suite plus your focused tests; save actual logs and repeatability evidence. Avoid overwriting historical verification reports with new results.
+- Export a master results table and clear figures that identify modality/condition, score scale, blur sigma and metric definition. Report unfavorable results as observed.
+
+8. What to hand back
+
+Provide your branch/commit, intake commit, exact commands, environment, new implementation/tests, fitted normalization artifact, paired RQ2/RQ3 score tables, master metrics/figures and reproduction logs. Update README, methodology, data contracts and project status to reflect implemented behavior. Identify unresolved dataset terms, failures/skips and any deviations from the frozen baseline. The report/presentation team needs verified evidence, not expected results.
+
+Commit your own work on nazmus-fusion-blur and use a normal branch push/pull request when the team authorizes sharing. Do not force push main or publish the owner's pre-email-privacy backup branch. Code, data licensing and final coursework submission are separate responsibilities.

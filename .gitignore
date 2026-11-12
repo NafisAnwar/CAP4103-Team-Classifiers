@@ -14,8 +14,3 @@ __pycache__/
 Thumbs.db
 work/
 tmp/
-data/raw/
-data/processed/
-ppa3_legacy/plots/
-docs/reference/*
-!docs/reference/source_inventory.json

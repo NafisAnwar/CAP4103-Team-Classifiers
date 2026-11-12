@@ -8,3 +8,6 @@
 *.pdf binary
 # preserve original bytes, including line endings
 ppa3_legacy/* -text
+data/processed/** filter=lfs diff=lfs merge=lfs -text
+docs/reference/*.pdf filter=lfs diff=lfs merge=lfs -text
+data/raw/** filter=lfs diff=lfs merge=lfs -text

@@ -10,7 +10,7 @@ BMPD is downloaded from the [creator's public Kaggle listing](https://www.kaggle
 
 The decoded-pixel audit identified 56 exact duplicate right-palm images and five additional images whose final 128x128 palm ROI standard deviation is below 0.02. After these exclusions 751 unique usable right-palm images remain. No cross-subject exact pixel duplicates were found. Exact deduplication does not establish the absence of near-duplicate acquisitions.
 
-Kaggle's license field is Unknown. Public download and course preapproval are documented; redistribution permission has not been established. Raw images, ROI contact sheets and frozen feature/model files stay local and are excluded from Git. Before publication or sharing images, the team must resolve source usage terms. Source article: Izadpanahkakhk et al., Novel mobile palmprint databases for biometric authentication, 2019, [DOI](https://doi.org/10.1504/IJGUC.2019.102016).
+Kaggle's license field is Unknown. Public download and course preapproval are documented; redistribution permission has not been established. Raw images, ROI contact sheets and frozen feature/model files were originally kept local. An optional Git LFS upload workflow is now documented, but sharing still requires permitted source usage terms. Before publication or sharing images, the team must resolve source usage terms. Source article: Izadpanahkakhk et al., Novel mobile palmprint databases for biometric authentication, 2019, [DOI](https://doi.org/10.1504/IJGUC.2019.102016).
 
 ## Palm preprocessing
 
