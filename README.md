@@ -1,100 +1,113 @@
 # CAP4103 Team Classifiers
 
-## Combining face and palmprint scores for authentication under image blur
+Combining face and palmprint scores for authentication under image blur.
 
-This CAP4103 Mobile Biometrics project compares face and palmprint authentication, then studies equal-weight score fusion and the effect of Gaussian blur on face probes. The face and palm datasets contain different people, so shared identities are explicitly simulated.
+## Current results
 
-## Current status
+Nazmus's validation-only normalization, equal-weight fusion and real face-blur
+experiments are implemented and executed. The original accepted baseline, models,
+seed 42, manifests and PPA3 files are preserved. RQ2 and RQ3 each reproduced exactly
+across two runs. RQ3 used restored, hash-matching face/palm models and real Olivetti
+face probes; palm scores were reused unchanged from Nafis's verified baseline.
 
-Nafis's N1-N7 implementation is complete. Both modality pipelines, fixed partitions/claims, validation selection, evaluation, RQ1 results and reproducibility checks are implemented. Nazmus Sakeeb's next phase is validation-only normalization, 50/50 fusion (RQ2), face-probe blur (RQ3) and final engineering QA. The allocation is 60/40 engineering effort units; it does not measure completion of the report or presentation.
-
-| RQ1 system | EER | ROC AUC | d-prime |
+| Face blur sigma | Face EER (%) | Palm EER (%) | Fusion EER (%) |
 | --- | ---: | ---: | ---: |
-| Face, PCA64 and cosine templates | 8.95749% | 0.971356 | 2.828287 |
-| Palm, HOG and cosine templates | 23.80229% | 0.846534 | 1.392485 |
+| 0 | 8.95749 | 23.80229 | 7.69231 |
+| 0.5 | 8.97436 | 23.80229 | 7.69231 |
+| 1 | 9.09244 | 23.80229 | 7.94534 |
+| 2 | 10.27328 | 23.80229 | 8.40081 |
+| 3 | 11.08300 | 23.80229 | 9.21053 |
 
-Models are fitted on enrollment only. Candidate selection uses validation only. EER uses linear interpolation at the empirical FAR/FRR crossing. These image results are separate from the archived PPA3 landmark regression.
+Fusion outperformed each unimodal system at all tested levels. Blur still degraded
+fusion; it did not eliminate quality sensitivity. Results are descriptive for this
+39-user artificially paired study, without confidence intervals or fairness claims.
 
-## Quick start in VS Code on Windows
+## Apply this update
 
-Install Git, Git LFS, Python 3.13 and VS Code. Repository access requires the owner's invitation while the repository is private.
+Extract `CAP4103_Nazmus_Updates.zip` into the existing repository root, merging
+folders and replacing the included changed files. This ZIP includes all Nazmus
+updates, measured results and plots; it does not include biometric images/models.
+Do not use the earlier standalone `Nazmus_CAP4103.zip` with this repository.
 
-```powershell
-git lfs install
-git clone https://github.com/NafisAnwar/CAP4103-Team-Classifiers.git
-Set-Location CAP4103-Team-Classifiers
-git lfs pull
-code CAP4103-Biometric-Fusion.code-workspace
-py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
-.\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+## Run
+
+Use the project virtual environment. On Mac use python3; on Windows the project's
+`.venv/Scripts/python.exe` may be used instead. The saved runs record their actual
+versions. The original requirements-lock.txt has not been rewritten.
+
+```bash
+python3 -B -m unittest discover -s tests -v
+python3 -B experiments/rq2_fusion.py
 ```
 
-Run each command only after the preceding command succeeds. Activation is optional; the commands use the environment interpreter directly. The original validated environment used Python 3.13.2. If VS Code selects another interpreter, select .venv/Scripts/python.exe.
+For real RQ3, place the actual Olivetti NPZ at `data/raw/face/olivetti.npz` and the
+hash-matching face.joblib/palm.joblib at
+`data/processed/models/rq1_20261112T151158Z_e192d8/`. In an authorized Git clone,
+`git lfs pull` retrieves these files. The GitHub source ZIP may contain pointers.
 
-The 33-test local suite passed with all local data/models present. Two integration tests are skipped when their required local assets are absent. A skip is not proof that those assets were downloaded successfully.
-
-## Data and model availability
-
-The original source upload deliberately excluded data/raw, data/processed, most docs/reference files and ppa3_legacy/plots. It was a complete upload of tracked files. scripts/prepare_full_upload.ps1 optionally adds these four folders and uses Git LFS for raw/processed files and reference PDFs. Its preparation step does not commit or push. Until that bundle has been committed and pushed, a clone will not contain those assets.
-
-If the full bundle is available, git lfs pull materializes the files; check the frozen baseline before starting new work:
-
-```powershell
-.\.venv\Scripts\python.exe -B -c "from src.experiment_support import load_frozen_models; models, metadata = load_frozen_models(); print(metadata['run_id'], sorted(models))"
+```bash
+python3 -B experiments/rq3_blur.py prepare --output data/processed/my_blur_plan
 ```
 
-If raw data is absent, retrieve it from the documented sources and reproduce locally:
+Inspect the generated validation preview before recording your own observations:
 
-```powershell
-.\.venv\Scripts\python.exe scripts/download_data.py
-.\.venv\Scripts\python.exe -B experiments/rq1_baseline.py
+```bash
+python3 -B experiments/rq3_blur.py review --plan data/processed/my_blur_plan/blur_plan.json --note "Your actual validation-image observations"
+python3 -B experiments/rq3_blur.py run --rq2-run rq2_nazmus_final_20261113 --plan data/processed/my_blur_plan/blur_plan.json
 ```
 
-The experiment prints a fresh run ID and updates results/metrics/rq1_latest.json. Load reproduced models using load_frozen_models(model_run_id='<new-run-id>'); they must match the original accepted model bytes. Do not overwrite existing run IDs or rebuild manifests to bypass a failed integrity check.
+Use fresh run/plan names. Original and new results are never overwritten. RQ1,
+RQ2 and RQ3 each have separate latest pointers. Plan preparation and review use
+validation faces only. Models and normalizers stay frozen during the test sweep.
 
-## Fixed study
+## Results and verification
 
-- Olivetti: 400 grayscale face images, 40 source identities.
-- BMPD: 812 right-palm captures audited; 56 exact duplicates and five low-contrast ROIs excluded, leaving 751 usable unique captures.
-- Seed 42 maps 39 eligible palm subjects to 39 face subjects under simulated shared labels.
-- Each user/modality has 4 enrollment, 2 validation and 4 test images. Palm enrollment/validation use session F; test uses session S.
-- Validation has 3,042 claims; test has 6,084. Join modalities by trial_id and claimed_user_id, with identical truth labels.
+- Requirements checklist and upload instructions: `docs/nazmus_readiness.md`.
+- Report-team methods/results: `docs/nazmus_results.md`.
+- RQ2 metrics: `results/metrics/rq2_nazmus_final_20261113/`.
+- RQ3 metrics: `results/metrics/rq3_nazmus_review_final/`.
+- Figures: matching run directories under `results/figures/`.
+- Combined RQ1/RQ2/RQ3 table:
+  `results/metrics/nazmus_final_review/score_audit/study_master_metrics.csv`.
+- Latest independent review and logs: `results/metrics/nazmus_final_review/`.
 
-## Repository map
+A clean base-plus-update integration run passed all 55 tests with zero skips after
+restoring actual assets. All 812 palm image byte hashes match the original audit.
+An independent raw-data RQ1 rerun selected PCA64/HOG again; palm scores were exact
+and maximum face score difference was 6.17e-15. EER/AUC matched exactly. RQ2 and RQ3
+were each repeated with exact score agreement. All saved metrics were recomputed.
 
-| Location | Purpose |
-| --- | --- |
-| src/ | Auditing/loading, preprocessing, protocol validation, models, keyed matching, evaluation and run support |
-| experiments/rq1_baseline.py | Enrollment-only fit, validation selection and held-out RQ1 export |
-| scripts/ | Acquisition, audit, protocol building, environment/legacy checks and upload preparation |
-| data/manifests/ | Locked image inventory, identity mapping, partitions and claim manifests |
-| results/metrics/ and results/figures/ | Measured results, plots, versions and integrity evidence |
-| ppa3_legacy/ | Five byte-preserved original PPA3 source/data/requirements files |
-| tests/ | Protocol, matching, metric, artifact and reproduction checks |
-| docs/nazmus_handoff.md | Detailed next-phase instructions and acceptance criteria |
-| docs/upload_guide.md | Owner upload commands, verification and recovery |
+The original model was saved with scikit-learn 1.9.1; verification used 1.8.0.
+The independently refitted face model has different serialization bytes. Original
+accepted model hashes remain strict and unchanged; those original models are used
+for RQ3. Numerical sigma-zero agreement uses a documented 1e-12 tolerance.
+`requirements-nazmus-tested.txt` records the seven tested library versions; it does
+not replace the original team requirements/lock. Use the team environment for its
+original serialization baseline, or a separate environment for the tested versions:
 
-Read [Nazmus's handoff](docs/nazmus_handoff.md), [methodology](docs/methodology.md), [data contracts](docs/data_contracts.md) and [project status](docs/project_status.md).
-
-## Integrity and reproduction
-
-results/metrics/rq1_accepted.json pins the original verified Nafis baseline rq1_20261112T151158Z_e192d8. The later rq1_structure_verified_20261112 run reproduced all validation/test scores exactly and both serialized models byte-for-byte in the locked local environment. Latest-run discovery is independent of the accepted baseline.
-
-protocol_lock.json protects the nine audit/protocol manifests. Text hashes tolerate line-ending conversion only; image/model hashes require exact bytes. Runs record provenance and completion state and refuse collisions. Audit/build commands require --rebuild to replace existing manifests. Ordinary legacy verification uses temporary copies:
-
-```powershell
-.\.venv\Scripts\python.exe -B scripts/verify_legacy.py
+```bash
+python3 -m venv .venv-nazmus
+source .venv-nazmus/bin/activate
+python3 -m pip install -r requirements-nazmus-tested.txt
 ```
 
-## Dataset sources and limitations
+Keep that environment outside your Git commit. Test logs are specific to the listed
+environment; they are not a guarantee of identical results on every platform.
 
-Olivetti is retrieved through [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html). BMPD comes from the [creator's Kaggle listing](https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd), with [source paper](https://doi.org/10.1504/IJGUC.2019.102016).
+To independently audit saved results without loading biometric image/model files:
 
-BMPD's downloaded license metadata is Unknown. Public availability and course preapproval do not establish redistribution permission; private GitHub access and LFS do not change those terms. Confirm permitted sharing before uploading biometric data or course/private documents. The downloader path allows collaborators to acquire data directly from its source.
+```bash
+python3 -B scripts/review_submission.py --rq2-run rq2_nazmus_final_20261113 --rq3-run rq3_nazmus_review_final --repeat-run rq3_nazmus_review_repeat --output results/metrics/my_saved_score_audit
+```
 
-The study has artificial identity pairing, a small selected population, exact-only duplicate detection, session shift, heuristic palm crops without anatomical/rotation alignment and no demographic fairness analysis. Gaussian blur represents loss of sharpness rather than physical motion blur. Report negative or inconclusive fusion results honestly.
+## Data and limitations
 
-## Development
+Olivetti Faces is retrieved through scikit-learn; BMPD from the creator's Kaggle
+listing. The study uses 39 artificial shared identities, 4/2/4 enrollment/validation/
+test samples per modality and 6,084 test claims. Face and palm subjects are different
+physical people. Palm crops, session shifts, exact-only deduplication and missing
+demographic analysis limit interpretation. Gaussian blur models lost sharpness,
+not motion blur. See `docs/methodology.md` for dataset sources and source-use limits.
 
-Preserve seed 42 and the original PPA3 files. Keep test data held out from fitting, normalization and model selection. Use useful informal lowercase inline comments, with no space after #. Keep environments, credentials, caches and temporary work outside version control. One root README is now requested; avoid empty placeholder documents and .gitkeep files.
+The group report, presentation, team acceptance and final submission remain separate
+responsibilities. No push or submission was performed.

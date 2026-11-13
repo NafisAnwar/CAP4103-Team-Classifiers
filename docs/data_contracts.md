@@ -1,6 +1,6 @@
-# Implemented and future data contracts
+# Implemented data contracts
 
-The identity, partition, trial and RQ1 score manifests below are implemented. RQ2/RQ3 score schemas are reserved for Sakeeb's later phase.
+The identity, partition, trial and RQ1 score manifests below are implemented. RQ2/RQ3 score schemas are now implemented by Nazmus; RQ2 and real RQ3 have been measured and repeated.
 
 ```text
 identity_mapping.csv:
@@ -31,3 +31,24 @@ results/metrics/rq1_accepted.json pins the verified Nafis baseline independently
 src.datasets.dataset_images performs the audited pixel-hash checks and the unchanged palm crop for a requested split. src.experiment_support provides enrollment, keyed scoring/evaluation, frozen model loading, and run artifact management. Evaluator and evaluate_labeled accept score_type and score_label for higher-is-better normalized/fusion scores; cosine defaults preserve RQ1 descriptions.
 
 New runs record run_status.json with running/completed/failed state and starting provenance. A process killed before cleanup can retain running state, which must be treated as incomplete. Completed metadata records source/manifest/model/artifact hashes and versions. Input hashes are checked again at completion; latest is replaced atomically only after required artifacts exist. Failed run IDs remain reserved for inspection.
+
+## Nazmus additions
+
+`normalizer.json` stores immutable `validation_all_claims_zscore_v1` parameters,
+validation count/hash, baseline ID and provenance. Fitting rejects non-validation
+trial IDs and mismatched claim coverage. It uses the mean and population standard
+deviation over all validation claims, with no clipping or balancing. Saved
+normalizers cannot be overwritten by the normalizer API.
+
+`master_metrics.csv` adds `condition,blur_sigma,modality` to the existing evaluator
+metrics. Unimodal metrics use raw cosine scores; fusion metrics use the normalized
+50/50 sum. EER/AUC are fractions, not percentages. Each run exports unique rates,
+histograms and ROC/FAR-FRR figures with appropriate score labels. All score schemas
+above remain exact; RQ3's normalizer version/hash is recorded in run metadata.
+
+`rq2_latest.json` and `rq3_latest.json` are separate from `rq1_latest.json`.
+Consumers verify completion and artifact hashes. RQ3 requires a validation-image
+plan, a recorded visual review, hash-verified frozen models and a completed RQ2
+normalizer. Original face pixels are not resized or rescaled. Palm scores come
+from the verified original CSV. Sigma-zero agreement within 1e-12 and exact palm invariance are enforced.
+A Git LFS pointer is unavailable content, even if its path ends in .npz/.joblib/.JPG.

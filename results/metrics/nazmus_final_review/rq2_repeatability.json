@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "runs": [
+    "rq2_nazmus_final_20261113",
+    "rq2_nazmus_repeat_20261113"
+  ],
+  "baseline_id": "rq1_20261112T151158Z_e192d8",
+  "trial_count": 6084,
+  "maximum_absolute_score_difference": 0.0,
+  "identical_normalizer_parameters": true,
+  "recomputed_exported_metrics": true,
+  "score_file_sha256": [
+    "29607695005bac488577519bc566a1d6bca126d797fdc24b1cfdde2e7e52f797",
+    "29607695005bac488577519bc566a1d6bca126d797fdc24b1cfdde2e7e52f797"
+  ],
+  "scope": "RQ2 repeatability from accepted score files; not raw-model/RQ1 or real RQ3 reproduction"
+}

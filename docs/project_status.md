@@ -1,17 +1,21 @@
-# Nafis implementation status
+# Current project integration status
 
-N1-N7 code and measured RQ1 are implemented. The approved six follow-up improvements are complete: protected manifests, isolated legacy verification, shared experiment helpers and frozen model loading, configurable score descriptions, explicit run status/provenance and corrected working notes. Sakeeb's acceptance of the handoff remains a separate step.
+Nazmus's S1-S5 implementation and engineering evidence are ready for repository
+integration. RQ2 and real RQ3 have both been measured and repeated. Independent
+raw-image RQ1 reproduction selected PCA64/HOG again and reproduced EER/AUC exactly;
+palm scores matched exactly and face-score roundoff was below 6.2e-15.
 
-Latest structural-refactor reproduction: rq1_structure_verified_20261112. It selects PCA64/HOG and reproduces every validation/test face/palm score exactly, with byte-identical models. The final 33-test suite, artifact checks and no-file-change audit are recorded in results/metrics/structure_improvements_verification.json and .txt. Text hashes tolerate Git line-ending conversion; image/model hashes require exact bytes. Earlier verification.json and rq1_reproducibility.json remain historical evidence for the original baseline.
+A fresh source-plus-update integration passed all 55 tests, with no failures/skips.
+The original 812 palm-image hashes, accepted model hashes, manifests, core model
+source and RQ1 evidence remain intact. The local cross-version PCA refit is not
+byte-identical; RQ3 uses the original accepted model bytes, with sigma-zero score
+agreement checked within 1e-12. No integrity hashes were weakened.
 
-Historical source checkpoint before the owner's email-privacy rewrite: 38620fddc2f5624c324ce01ab7d422e6c1777ab1; equivalent rewritten source commit is fbd1328. Existing verification records preserve the original historical IDs. A fresh Git archive of that commit also passed the 33-test discovery with two expected local-model checks skipped and no file changes. See results/metrics/fresh_checkout_verification.json and .txt. Its remaining 31 checks ran successfully without raw images, models, a virtual environment in the checkout or private context documents.
+See docs/nazmus_readiness.md, docs/nazmus_results.md and
+results/metrics/nazmus_final_review/ for current evidence. RQ2 fusion EER is 7.69231%;
+at sigma 3 it is 9.21053% versus face-only 11.08300%. All other conditions and metrics
+are in the combined study table.
 
-Completed: repository cleanup; byte-preserved runnable legacy code/data; public dataset retrieval and integrity/audit tools; 39-user artificial mapping; session-aware 4/2/4 partitions; fixed validation/test claim manifests; enrollment-only PCA face and HOG/LBP palm pipelines; validation model selection; keyed raw score exports; general evaluator and actual RQ1 metrics/figures. The newest request authorizes one root README with project overview/onboarding; empty placeholder files remain unnecessary.
-
-Actual latest outputs are located by results/metrics/rq1_latest.json. results/metrics/rq1_accepted.json separately pins the original verified Nafis baseline rq1_20261112T151158Z_e192d8, without claiming teammate acceptance. Face EER remains 0.0895748987854251 and palm EER remains 0.2380229419703104, using interpolated empirical ROC EER. These are image-dataset results, distinct from the legacy Caltech EER 0.2612.
-
-Source caveat: BMPD Kaggle license metadata is Unknown, even though the course preapproves the dataset. No redistribution permission is claimed; raw images, contact sheets and frozen models remain ignored/local. The heuristic ROI lacks rotation/anatomical alignment. See methodology.md for the actual controls and limitations.
-
-Next after Nafis review: Sakeeb reproduces the exact accepted checkpoint, then implements validation-only normalization and keyed 50/50 fusion (RQ2), face-probe blur with fixed palms/models (RQ3), and final engineering QA. No fusion/blur code is included yet. GitHub origin is configured at NafisAnwar/CAP4103-Team-Classifiers and the user pushed main. Final submission requirements remain unconfirmed. The later optional full-assets workflow is prepared locally; it has not been executed or pushed by this documentation update.
-
-Final transfer cleanup: Nafis N1-N7 implementation is complete (60/60 assigned effort units). Nazmus S1-S5 remains (40/100 planned engineering units); group report/presentation and teammate acceptance remain separate. Start with docs/nazmus_handoff.md or docs/nazmus_handoff.txt. Session-only notes were removed from the repository and retained separately.
+Pending human/team actions: branch upload and commit, review/acceptance, final group
+report and presentation assembly, and course submission. The uploaded archive has
+no Git history; current GitHub branch contents/commit were not independently verified.

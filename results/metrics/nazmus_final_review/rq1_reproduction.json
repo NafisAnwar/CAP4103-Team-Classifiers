@@ -1,0 +1,43 @@
+{
+  "status": "passed_numerical_reproduction",
+  "run_id": "rq1_nazmus_independent_review",
+  "chosen_models": {
+    "face_pca_components": 64,
+    "palm_feature": "hog",
+    "template_rule": "mean unit enrollment vectors, normalized; cosine similarity"
+  },
+  "maximum_score_difference": {
+    "validation_scores.csv face_score_raw": 5.9396931817445875e-15,
+    "validation_scores.csv palm_score_raw": 0.0,
+    "rq1_baseline_scores.csv face_score_raw": 6.161737786669619e-15,
+    "rq1_baseline_scores.csv palm_score_raw": 0.0
+  },
+  "metric_absolute_differences": {
+    "face": {
+      "eer": 0.0,
+      "auc": 0.0,
+      "d_prime": 1.3322676295501878e-15
+    },
+    "palm": {
+      "eer": 0.0,
+      "auc": 0.0,
+      "d_prime": 0.0
+    }
+  },
+  "absolute_tolerance": 1e-10,
+  "serialized_model_byte_identity": {
+    "face": false,
+    "palm": true
+  },
+  "python": "3.12.14",
+  "packages": {
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "scikit-learn": "1.8.0",
+    "scikit-image": "0.26.0",
+    "matplotlib": "3.10.8",
+    "pillow": "13.0.0",
+    "joblib": "1.5.3"
+  },
+  "note": "Refitted on enrollment and selected on validation using unchanged RQ1 code. Different library versions can change serialization bytes and floating point roundoff. Original accepted models and strict model hashes were not replaced."
+}

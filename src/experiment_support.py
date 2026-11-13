@@ -51,7 +51,10 @@ def capture_provenance(root=ROOT):
 
 
 class RunArtifacts:
-    def __init__(self, root=ROOT, run_id=None):
+    def __init__(self, root=ROOT, run_id=None, latest_name='rq1_latest.json'):
+        if latest_name not in {'rq1_latest.json', 'rq2_latest.json', 'rq3_latest.json'}:
+            raise ValueError('Unknown latest pointer name')
+        self.latest_name = latest_name
         self.root = Path(root)
         self.run_id = run_id or datetime.now(timezone.utc).strftime('rq1_%Y%m%dT%H%M%SZ_') + uuid.uuid4().hex[:6]
         if re.fullmatch(r'[A-Za-z0-9_-]+', self.run_id) is None:
@@ -96,7 +99,7 @@ class RunArtifacts:
         path = self.metrics_dir / 'run_metadata.json'
         write_json(path, metadata)
         self._status('completed')
-        write_json(self.root / 'results/metrics/rq1_latest.json',
+        write_json(self.root / 'results/metrics' / self.latest_name,
                    {'run_id': self.run_id, 'metadata': path.relative_to(self.root).as_posix()}) #publish only verified complete runs
         self.completed = True
         return metadata

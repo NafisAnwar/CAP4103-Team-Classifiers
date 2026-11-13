@@ -38,7 +38,7 @@ The new evaluator extends PPA3's genuine/impostor labeling, pooled-variance d-pr
 
 Each experiment writes a unique metrics/figures directory and refuses to overwrite an existing run ID. Outputs include paired raw validation/test scores, validation model comparisons, ROC and FAR/FRR curves, score distributions, summary metrics, manifest/source hashes, fit sample IDs and package versions. Local joblib files freeze the chosen enrollment models for Sakeeb's intake and blur experiments. Only load these self-generated, hash-verified joblib files; they are not general untrusted model inputs.
 
-Results are descriptive for this small selected population. No uncertainty interval, broad demographic fairness or deployable accuracy claim is made. RQ2 must assess whether equal-weight fusion helps rather than assume it; RQ3 must preserve the mapping, manifests, models, enrollment and validation-trained normalizers while blurring only raw face test probes. Neither RQ2 nor RQ3 is implemented in this scope.
+Results are descriptive for this small selected population. No uncertainty interval, broad demographic fairness or deployable accuracy claim is made. RQ2 must assess whether equal-weight fusion helps rather than assume it; RQ3 must preserve the mapping, manifests, models, enrollment and validation-trained normalizers while blurring only raw face test probes. Neither RQ2 nor RQ3 was implemented in the original RQ1 scope; Nazmus's extension is documented below.
 
 From the VS Code project-root terminal:
 
@@ -52,3 +52,36 @@ On another checkout, create Python 3.13 .venv, install requirements-lock.txt and
 The refactored RQ1 uses shared verified image loading and enrollment/scoring helpers. Models, matching, preprocessing, candidates and numerical evaluation are unchanged. Evaluator score descriptions can be supplied by later normalized/fusion callers. The accepted baseline pointer pins metadata and score hashes separately from latest-run discovery; the frozen loader also checks the feature/matching source, enrollment IDs and model bytes.
 
 New runs capture provenance before work, record running/completed/failed status, recheck input hashes at completion and hash required artifacts. JSON writes replace files atomically. A forced termination may leave running status, so only completed runs should be consumed. The regular legacy check runs byte-identical copies in a temporary directory and leaves saved project evidence untouched; scripts/verify_legacy.py --export explicitly replaces that evidence.
+
+## Nazmus RQ2/RQ3 extension
+
+RQ2 retains the accepted 39-user mapping and all 6,084 test claims. Each modality
+is standardized using the mean and population standard deviation over its 3,042
+validation claim scores, including 78 genuine and 2,964 impostor claims. The
+imbalance is deliberately retained and disclosed. No test scores select the rule,
+weights, means or standard deviations. Scores are unbounded and not probabilities.
+Keyed, label-checked fusion is exactly half face z-score plus half palm z-score.
+The fitted parameters and source hashes are saved and reloaded before use.
+
+RQ2 is executed from hash-verified accepted score CSVs, not newly acquired images.
+Face/palm metrics match the accepted RQ1 metrics. Fusion EER is 7.69231%, compared
+with face 8.95749% and palm 23.80229%. The paired descriptive improvement motivates
+RQ3; it does not establish significance or robustness under blur.
+
+RQ3 implementation proposes sigma 0, 0.5, 1, 2 and 3 source pixels. A validation-only
+preview and explicit inspection record precede the held-out sweep. Gaussian filtering
+uses SciPy, reflect boundaries and truncate=4, preserving original 64x64 [0,1]
+face arrays and dtype. Sigma zero returns an unchanged copy. Filtering precedes
+the frozen PCA transform. Enrollment, models, palm images/scores, claims and
+normalizers remain fixed. No fit method is called. The runner checks model-state
+hashes, input arrays, exact sigma-zero score equivalence and invariant palm scores
+and metrics. It recomputes saved metrics from exported score CSVs.
+
+Actual RQ3 was subsequently executed twice after the real Olivetti NPZ and accepted
+face/palm model bytes were restored and hash-verified. The assistant inspected the
+validation preview before held-out scoring. Fusion EER at sigmas 0/0.5/1/2/3 was
+7.69231/7.69231/7.94534/8.40081/9.21053 percent. Palm EER stayed 23.80229 percent.
+The two runs matched every score exactly. Sigma-zero comparison with historical RQ2
+allows 1e-12 absolute roundoff (observed maximum 4.88e-14), preserving strict model
+hashes. Independent raw-palm/RQ1 reproduction subsequently passed numerically; see the final review evidence. See nazmus_results.md for the actual
+library-version warning, validation checks and limitations.

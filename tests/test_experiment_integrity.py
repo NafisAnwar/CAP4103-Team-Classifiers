@@ -4,6 +4,7 @@ import json
 import unittest
 import numpy as np
 from src.files import ROOT, read_csv
+from src.fusion import asset_available
 from src.evaluation import evaluate_labeled
 from src.trial_protocol import load_protocol
 from src.datasets import load_faces
@@ -22,7 +23,7 @@ def frozen_assets_available():
     paths = [ROOT / 'data/raw/face/olivetti.npz']
     paths += [ROOT / info['path'] for info in metadata['models'].values()]
     paths += [ROOT / row['source_path_or_key'] for row in read_csv(ROOT / 'data/manifests/partitions.csv') if row['modality'] == 'palm']
-    return all(path.is_file() for path in paths) #a partial download must not masquerade as a complete integration environment
+    return all(asset_available(path) for path in paths) #a partial download must not masquerade as a complete integration environment
 
 
 @unittest.skipUnless((ROOT / 'results/metrics/rq1_latest.json').exists(), 'Local RQ1 outputs required')
@@ -47,7 +48,7 @@ class ExperimentIntegrityTest(unittest.TestCase):
             for field in ['eer', 'auc', 'd_prime']:
                 self.assertAlmostEqual(calculated[field], saved[field], places=12)
 
-    @unittest.skipUnless(frozen_assets_available(), 'All accepted models and face/palm files are required')
+    @unittest.skipUnless(frozen_assets_available(), 'Actual accepted models/images required; missing files or Git LFS pointers do not count')
     def test_frozen_models_use_only_enrollment_and_reproduce_a_probe(self):
         models, metadata = load_frozen_models()
         accepted = json.loads((ROOT / 'results/metrics/rq1_accepted.json').read_text())
@@ -71,7 +72,7 @@ class ExperimentIntegrityTest(unittest.TestCase):
             expected = {row['claimed_user_id']: float(row[f'{modality}_score_raw']) for row in score_rows if row['trial_id'].startswith('test-' + trial['simulated_true_user'] + '-p00-')}
             np.testing.assert_allclose(matrix, [expected[claim] for claim in model.classes_], rtol=1e-10, atol=1e-10)
 
-    @unittest.skipUnless(frozen_assets_available(), 'All accepted models and face/palm files are required')
+    @unittest.skipUnless(frozen_assets_available(), 'Actual accepted models/images required; missing files or Git LFS pointers do not count')
     def test_reproduced_models_can_be_loaded_without_replacing_the_accepted_paths(self):
         pointer = json.loads((ROOT / 'results/metrics/rq1_latest.json').read_text())
         metadata = json.loads((ROOT / pointer['metadata']).read_text())

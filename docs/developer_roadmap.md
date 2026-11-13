@@ -1,6 +1,6 @@
 # Developer roadmap and gates
 
-Detailed source plan: `reference/CAP4103_PPA3_Extension_Implementation_Plan.txt`. Nafis's implementation checklist is complete locally; Sakeeb's independent acceptance and later engineering work remain pending. docs/project_status.md is the authoritative current progress record.
+Detailed source plan: `reference/CAP4103_PPA3_Extension_Implementation_Plan.txt`. Nafis's implementation checklist is complete locally; Nazmus's engineering implementation and numerical reproduction are complete; human team acceptance remains separate. docs/project_status.md is the authoritative current progress record.
 
 | Phase | Units | Deliverable and gate |
 | --- | ---: | --- |
@@ -31,12 +31,14 @@ Nafis implements N1-N7 before transfer (60 units). Sakeeb implements S1-S5 after
 
 ## Sakeeb intake and completion checklist
 
-- [ ] Reproduce PPA3 and RQ1 at Nafis's exact accepted commit before fusion work.
-- [ ] Join unique trial/claim keys and assert label agreement.
-- [ ] Fit normalization on validation only; keep it frozen for all held-out conditions.
-- [ ] Compute exactly equal-weight fusion, then measure RQ2.
-- [ ] Predeclare visually inspected blur levels; blur face test pixels only.
-- [ ] Measure RQ3 with identical palms, trials, enrollment, models and normalizers.
-- [ ] Assert sigma-zero equivalence and invariant palm scores/EER.
-- [ ] Export checked master metrics/figures; document negative findings and limitations.
-- [ ] Complete final QA and provide verified methods/results to the report team.
+- [x] Reproduce PPA3 and RQ1 from the hash-verified source/archive and raw images. Numerical agreement verified; exact Git commit unavailable and cross-version PCA serialization differs.
+- [x] Join unique trial/claim keys and assert label agreement.
+- [x] Implement validation-only fitting and frozen parameters; execute RQ2.
+- [x] Compute equal-weight fusion and measure RQ2 from verified accepted scores.
+- [x] Predeclare and inspect validation blur levels; blur real face test pixels only.
+- [x] Measure and repeat RQ3 with identical palms, trials, enrollment, models and normalizers.
+- [x] Verify sigma-zero within 1e-12 and exact palm invariance on real runs.
+- [x] Export checked master metrics/figures and document findings/limitations.
+- [x] Complete clean-integration QA and prepare verified methods/results for the report team.
+
+Current completion evidence and blockers are in docs/nazmus_results.md. Independent raw-palm/RQ1 refitting and real RQ3 are verified numerically. Human group acceptance and actual Git upload remain pending.
