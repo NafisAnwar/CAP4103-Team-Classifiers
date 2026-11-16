@@ -21,6 +21,8 @@ def evaluate_conditions(rows, artifacts, condition, sigma):
 
 
 def verify_metrics(rows, summary):
+    if len(summary) != 3 or {record['modality'] for record in summary} != {'face', 'palm', 'fusion'}:
+        raise ValueError('Summary must contain each modality exactly once') #an incomplete table must not pass an audit
     for record in summary:
         m = record['modality']
         field = 'fusion_score' if m == 'fusion' else m + '_score_raw'

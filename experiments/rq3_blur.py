@@ -20,6 +20,10 @@ def run(rq2_run_id, plan_path, run_id=None, root=ROOT, model_run_id=None):
     rq2_folder, rq2_metadata = completed_run(root, rq2_run_id, 'rq2')
     normalizer_path = rq2_folder/'normalizer.json'
     normalizer = Normalizer.load(normalizer_path)
+    fitted = Normalizer.fit(tables['validation'], trials['validation'], split='validation',
+                            validation_sha256=pointer['score_sha256']['validation_scores.csv'], baseline_id=pointer['run_id'])
+    if asdict(normalizer) != asdict(fitted):
+        raise ValueError('RQ2 normalizer is not the accepted validation-only fit') #check the parameters, not just their recorded labels
     if (normalizer.baseline_id != pointer['run_id'] or rq2_metadata['baseline_id'] != pointer['run_id']
         or normalizer.validation_sha256 != pointer['score_sha256']['validation_scores.csv']
         or asdict(normalizer) != rq2_metadata['normalization']):

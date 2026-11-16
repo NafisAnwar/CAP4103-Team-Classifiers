@@ -107,7 +107,21 @@ class BlurTest(unittest.TestCase):
         rq2_id=json.loads(pointer.read_text())['run_id']
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)/'repo'
-            shutil.copytree(ROOT,root,ignore=shutil.ignore_patterns('__pycache__','.git','raw','processed'))
+            root.mkdir()
+            for name in ['src', 'data/manifests']:
+                shutil.copytree(ROOT/name, root/name, ignore=shutil.ignore_patterns('__pycache__')) #the fixture never copies environments or biometric assets
+            from src.files import read_csv
+            accepted = json.loads((ROOT/'results/metrics/rq1_accepted.json').read_text())
+            parent = ROOT/'results/metrics'/rq2_id
+            parent_metadata = json.loads((parent/'run_metadata.json').read_text())
+            names = ['results/metrics/rq1_accepted.json', accepted['metadata'],
+                     f'results/metrics/{rq2_id}/run_metadata.json', f'results/metrics/{rq2_id}/run_status.json']
+            names += [(Path(accepted['metadata']).parent/name).as_posix() for name in accepted['score_sha256']]
+            names += list(parent_metadata['artifact_sha256'])
+            for name in names:
+                target = root/name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT/name,target) #copy only the completed artifacts required by the parent check
             original=accepted_scores(root)[-1]['test']
             sweeps={sigma:[dict(r,face_score_raw=r['face_score_raw']-.2*sigma) for r in original]
                     for sigma in [0.,1.]}
