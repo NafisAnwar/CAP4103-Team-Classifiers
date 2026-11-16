@@ -28,13 +28,25 @@ The system uses separate feature extraction and matching pipelines for each moda
 
 ## Research Questions
 
-| Research Question | Experimental Objective |
-| --- | --- |
-| RQ1 | Compare clear-image face and palmprint authentication performance. |
-| RQ2 | Determine whether equal-weight score-level fusion improves authentication performance relative to either modality alone. |
-| RQ3 | Evaluate face-only, palmprint-only, and fused authentication under increasing facial image blur. |
+### RQ1: Baseline Authentication Performance
 
-The experiments follow a connected progression. RQ1 establishes the individual modality baselines, RQ2 evaluates the combined system, and RQ3 examines whether the fusion advantage persists under facial image degradation.
+How do face-only and palmprint-only biometric authentication systems compare in terms of Equal Error Rate (EER), ROC AUC and d-prime under clear-image conditions?
+
+### RQ2: Equal-Weight Score-Level Fusion
+
+Does equal-weight fusion of validation-normalized face and palmprint matching scores improve authentication performance relative to either individual modality under clear-image conditions?
+
+### RQ3: Authentication Performance Under Facial Image Blur
+
+As Gaussian blur increases in facial test images while palmprint image quality remains unchanged, how does equal-weight score-level fusion affect authentication performance compared with face-only and palmprint-only authentication?
+
+### Experimental Progression
+
+RQ1 established individual modality performance, with face authentication achieving an EER of 8.96% compared with 23.80% for palmprint authentication. This motivated RQ2, which investigated whether palmprint matching scores could provide complementary information despite the weaker individual baseline.
+
+RQ2 achieved a fusion EER of 7.69%, reducing observed EER by 1.27 percentage points relative to face-only authentication. This motivated RQ3, which evaluated whether the observed fusion advantage persisted under increasing facial image blur.
+
+All three experiments retain the same simulated identities, sample partitions and authentication claim protocol.
 
 ## System Architecture
 
