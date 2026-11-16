@@ -1,94 +1,206 @@
 # CAP4103 Team Classifiers
 
-Combining face and palmprint scores for authentication under image blur.
+## Combining Face and Palmprint Scores for Authentication Under Image Blur
 
-## Status
+- **Course:** CAP4103 - Mobile Biometrics
+- **Institution:** University of South Florida
+- **Semester:** Fall 2026
+- **Instructor:** Dr. Tempestt Neal
+- **Team:** Nafis Anwar, Nazmus, Diego, Mikaela, Sienah
 
-The planned coding segment is feature complete: both initial matchers, fixed data/claim protocol, validation-only normalization, equal-weight score fusion, frozen-model face-probe blur, evaluation, figures and integrity/repeatability checks. Nafis's N1-N7 and Nazmus's S1-S5 engineering scopes are integrated. Report, presentation, references, team acceptance and course submission remain separate.
+## Project Overview
 
-The November 16 review passed all 57 local tests with zero skips. Independent raw-data RQ1, RQ2 and all five RQ3 conditions exactly reproduced the submitted scores in the original team environment. All 812 palm-file hashes pass. See [review findings](docs/integration_review.md) and [browser continuation handoff](docs/browser_handoff.md).
+This project implements and evaluates a multimodal biometric authentication system combining facial recognition and palmprint recognition. The objective is to determine whether score-level fusion improves authentication performance under clear image conditions and whether an unaffected biometric modality can help maintain performance when facial image quality deteriorates.
 
-## Results
+The system uses separate feature extraction and matching pipelines for each modality, followed by validation-based score normalization and equal-weight fusion. Performance is measured using Equal Error Rate (EER), ROC AUC, d-prime, and genuine and impostor score distributions.
 
-| Face blur sigma, source pixels | Face EER (%) | Palm EER (%) | Fusion EER (%) |
+## Research Questions
+
+| Research Question | Experimental Objective |
+| --- | --- |
+| RQ1 | Compare clear-image face and palmprint authentication performance. |
+| RQ2 | Determine whether equal-weight score-level fusion improves authentication performance relative to either modality alone. |
+| RQ3 | Evaluate face-only, palmprint-only, and fused authentication under increasing facial image blur. |
+
+The experiments follow a connected progression. RQ1 establishes the individual modality baselines, RQ2 evaluates the combined system, and RQ3 examines whether the fusion advantage persists under facial image degradation.
+
+## System Architecture
+
+| Component | Implementation |
+| --- | --- |
+| Facial preprocessing | Original 64x64 grayscale face images |
+| Facial features | Principal Component Analysis (64 components) |
+| Palmprint preprocessing | Skin segmentation and interior palm ROI extraction |
+| Palmprint features | Histogram of Oriented Gradients (1,764 features) |
+| Enrollment | L2-normalized mean feature templates |
+| Matching | Cosine similarity |
+| Score normalization | Validation-only Z-score normalization |
+| Fusion | Equal-weight normalized score averaging |
+| Image degradation | Gaussian filtering of facial test probes |
+| Evaluation | EER, ROC AUC, d-prime and score distributions |
+
+Both biometric pipelines share the same simulated identity mapping, authentication trial protocol and evaluation workflow.
+
+## Datasets and Experimental Protocol
+
+- [Olivetti Faces Dataset](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html)
+- [Birjand University Mobile Palmprint Database](https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd)
+- [BMPD associated research publication](https://doi.org/10.1504/IJGUC.2019.102016)
+
+| Parameter | Value |
+| --- | --- |
+| Simulated identities | 39 |
+| Enrollment samples per identity, per modality | 4 |
+| Validation samples per identity, per modality | 2 |
+| Test samples per identity, per modality | 4 |
+| Total selected images | 780 |
+| Validation claims | 3,042 |
+| Test claims | 6,084 |
+| Random seed | 42 |
+
+The original datasets contain different physical individuals. A fixed artificial identity mapping simulates a shared multimodal population. Enrollment, validation and test partitions remain consistent across all experiments.
+
+Palmprint enrollment and validation use first-session captures, while testing uses second-session captures. Facial images use a seeded within-user partition.
+
+## Experimental Results
+
+### RQ1 and RQ2: Clear-Image Authentication
+
+| System | EER (%) | ROC AUC | D-prime |
 | --- | ---: | ---: | ---: |
-| 0 | 8.95749 | 23.80229 | 7.69231 |
-| 0.5 | 8.97436 | 23.80229 | 7.69231 |
-| 1 | 9.09244 | 23.80229 | 7.94534 |
-| 2 | 10.27328 | 23.80229 | 8.40081 |
-| 3 | 11.08300 | 23.80229 | 9.21053 |
+| Face | 8.96 | 0.9714 | 2.8283 |
+| Palmprint | 23.80 | 0.8465 | 1.3925 |
+| Equal-weight fusion | 7.69 | 0.9797 | 2.9294 |
 
-On this selected, artificially paired 39-user test set, fusion has lower observed EER than either modality at every tested sigma. Fusion still degrades under blur. These are descriptive results without confidence intervals, statistical-significance or demographic-fairness claims. Gaussian blur is not physical motion blur.
+Equal-weight fusion reduced observed EER by 1.27 percentage points relative to face-only authentication and 16.11 percentage points relative to palmprint-only authentication.
 
-## Clone and open in VS Code
+![Clear-condition authentication comparison](results/figures/rq2_main_verified_20261116/rq2_comparison.png)
 
-Install Git/Git LFS, Python 3.13 and VS Code, and obtain repository access from the owner.
+### RQ3: Authentication Under Facial Image Blur
+
+| Gaussian Sigma (pixels) | Face EER (%) | Palmprint EER (%) | Fusion EER (%) |
+| ---: | ---: | ---: | ---: |
+| 0.0 | 8.96 | 23.80 | 7.69 |
+| 0.5 | 8.97 | 23.80 | 7.69 |
+| 1.0 | 9.09 | 23.80 | 7.95 |
+| 2.0 | 10.27 | 23.80 | 8.40 |
+| 3.0 | 11.08 | 23.80 | 9.21 |
+
+Fusion retained a lower observed EER at every evaluated blur level. Palmprint inputs and matching scores remained unchanged while facial probe quality decreased.
+
+![Authentication performance under facial image blur](results/figures/rq3_main_verified_20261116/rq3_comparison.png)
+
+## Experimental Controls
+
+| Setting | RQ1 | RQ2 | RQ3 |
+| --- | --- | --- | --- |
+| Identity mapping and data splits | Fixed | Fixed | Fixed |
+| Enrollment models | Fitted on enrollment | Frozen | Frozen |
+| Matching method | Cosine | Cosine | Cosine |
+| Score normalization | None | Validation-fitted | Frozen |
+| Fusion weights | None | 0.5 / 0.5 | 0.5 / 0.5 |
+| Facial blur sigma | 0 | 0 | 0, 0.5, 1, 2, 3 |
+| Palmprint image quality | Unchanged | Unchanged | Unchanged |
+
+No test-set data are used to fit the normalization parameters or select fusion weights.
+
+## Repository Structure
+
+| Directory | Description |
+| --- | --- |
+| `src/` | Dataset processing, feature extraction, matching, fusion, blur and evaluation |
+| `experiments/` | Executable research question experiments |
+| `data/manifests/` | Fixed dataset inventories, identity mappings, partitions and claims |
+| `data/raw/` | Original biometric dataset assets |
+| `data/processed/` | Audited data, frozen models and blur plans |
+| `results/metrics/` | Authentication scores, quantitative metrics and verification evidence |
+| `results/figures/` | ROC curves, score distributions and comparative figures |
+| `scripts/` | Dataset preparation, environment checks and verification utilities |
+| `tests/` | Automated unit and integration tests |
+| `ppa3_legacy/` | Preserved PPA3 implementation and regression inputs |
+| `docs/` | Technical methodology, data contracts and verification documentation |
+
+## Installation
+
+The validated environment uses Python 3.13.2.
+
+Git LFS is required to retrieve the biometric dataset and model assets. Dataset access and distribution must comply with the original dataset terms.
 
 ```powershell
 git lfs install
 git clone https://github.com/NafisAnwar/CAP4103-Team-Classifiers.git
 Set-Location CAP4103-Team-Classifiers
 git lfs pull
-git lfs fsck
+
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
 .\.venv\Scripts\python.exe -m pip check
+
 code CAP4103-Biometric-Fusion.code-workspace
+```
+
+## Running the Experiments
+
+Execute the following commands from the repository root using unique run identifiers.
+
+### RQ1: Individual Authentication
+
+```powershell
+.\.venv\Scripts\python.exe experiments/rq1_baseline.py --run-id rq1_reproduction
+```
+
+### RQ2: Score-Level Fusion
+
+```powershell
+.\.venv\Scripts\python.exe experiments/rq2_fusion.py --run-id rq2_reproduction
+```
+
+### RQ3: Facial Image Blur
+
+```powershell
+.\.venv\Scripts\python.exe experiments/rq3_blur.py run --rq2-run rq2_reproduction --plan data/processed/blur_plans/integration_20261116/blur_plan.json --run-id rq3_reproduction
+```
+
+These commands preserve the accepted baseline and fixed study manifests. Existing run identifiers cannot be overwritten.
+
+## Results and Traceability
+
+| Experiment | Implementation | Verified Results |
+| --- | --- | --- |
+| RQ1 | `experiments/rq1_baseline.py` | `results/metrics/rq1_main_verified_20261116/` |
+| RQ2 | `experiments/rq2_fusion.py` | `results/metrics/rq2_main_verified_20261116/` |
+| RQ3 | `experiments/rq3_blur.py` | `results/metrics/rq3_main_verified_20261116/` |
+
+Combined experimental results and independent verification evidence are available under:
+
+- [Clear-condition metrics](results/metrics/main_integration_20261116/report_clear_metrics.csv)
+- [Blur-condition metrics](results/metrics/main_integration_20261116/report_blur_metrics.csv)
+- [Master experimental metrics](results/metrics/main_integration_20261116/score_audit/study_master_metrics.csv)
+- [Reproduction comparison](results/metrics/main_integration_20261116/reproduction_comparison.json)
+
+## Testing and Verification
+
+```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
-```
-
-Stop on failures; PowerShell's ErrorActionPreference alone does not catch every native exit code. Full image/model checks require actual LFS bytes, not pointer text. The validated Windows environment uses Python 3.13.2 and the original requirements-lock.txt. requirements-nazmus-tested.txt records the separate historical verification environment and does not replace the original lock.
-
-## Verify and reproduce
-
-The accepted reference remains rq1_20261112T151158Z_e192d8. The November 16 runs are rq1_main_verified_20261116, rq2_main_verified_20261116 and rq3_main_verified_20261116; corresponding repeat fusion/blur runs are also saved. Independent current evidence is under results/metrics/main_integration_20261116. Three separate latest pointers locate current RQ1/RQ2/RQ3 outputs.
-
-```powershell
 .\.venv\Scripts\python.exe -B scripts/verify_legacy.py
-.\.venv\Scripts\python.exe -B -c "from src.experiment_support import load_frozen_models; models, info = load_frozen_models(); print(info['run_id'], sorted(models))"
-.\.venv\Scripts\python.exe -B scripts/review_submission.py --rq2-run rq2_main_verified_20261116 --rq3-run rq3_main_verified_20261116 --repeat-run rq3_main_repeat_20261116 --output results/metrics/my_saved_score_audit
 ```
 
-Use fresh output paths/run IDs. The last command rechecks saved scores and metrics; it does not rerun raw-image models. For an independent execution:
+The integrated implementation passed 57 automated tests with zero skips. Independent reproduction verified the RQ1 scores, RQ2 fusion results and all five RQ3 blur conditions.
 
-```powershell
-.\.venv\Scripts\python.exe -B experiments/rq1_baseline.py --run-id rq1_my_reproduction
-.\.venv\Scripts\python.exe -B experiments/rq2_fusion.py --run-id rq2_my_reproduction
-.\.venv\Scripts\python.exe -B experiments/rq3_blur.py run --rq2-run rq2_my_reproduction --plan data/processed/blur_plans/integration_20261116/blur_plan.json --run-id rq3_my_reproduction
-```
+The evaluator extends the original HW3/PPA3 performance evaluation workflow to support image-based authentication and normalized multimodal similarity scores.
 
-The saved plan/preview is verified against the same blur implementation, validation pixels and study protocol. To review a new severity plan, run prepare into a new directory, inspect validation_blur_preview.png, then explicitly run review with your actual observations before run. Do not claim that a recorded automated review is human-team acceptance.
+For detailed documentation, see:
 
-```powershell
-.\.venv\Scripts\python.exe -B experiments/rq3_blur.py prepare --output data/processed/my_new_plan
-.\.venv\Scripts\python.exe -B experiments/rq3_blur.py review --plan data/processed/my_new_plan/blur_plan.json --note "Record your actual validation-preview observations here"
-```
+- [Methodology](docs/methodology.md)
+- [Data Contracts](docs/data_contracts.md)
+- [Technical Verification](docs/verification.md)
 
-Do not use --rebuild during routine reproduction. The committed mapping, splits and trials define the study. Enrollment fits models, validation selects candidates and fits z-score parameters, and test remains held out. Fusion is exactly 0.5 times each normalized score. Blur changes only copies of raw face test probes; models, normalization, palms and claims remain frozen.
+## Limitations
 
-## Repository map
+The study uses a small, artificially paired population and reports descriptive results for the evaluated conditions. Authentication claims sharing identities and probe samples are not statistically independent.
 
-| Location | Contents |
-| --- | --- |
-| src/ | Audited loading, preprocessing, protocol, matchers, fusion, blur, evaluation and run support |
-| experiments/ | RQ1 baseline, RQ2 clear fusion and RQ3 frozen blur runners |
-| tests/ | 57 unit/integration tests |
-| scripts/ | Data acquisition/audit, legacy regression, repeatability and saved-score audits |
-| data/manifests/ | Locked inventories, mapping, partitions and claims |
-| data/raw/ and data/processed/ | LFS-backed study assets, frozen models and reviewed blur plan |
-| results/metrics/main_integration_20261116/ | Independent review, final study table, environment and test evidence |
-| results/figures/ | Per-modality ROC/FAR-FRR/distributions and comparison figures |
-| docs/reference/ | Supplied course sources/templates, including November 15 description |
-| docs/browser_handoff.md | Final methods/results, rubric mapping, writing plan and browser starter prompt |
+Gaussian blur approximates a reduction in image sharpness but does not represent every form of physical motion blur. The palmprint ROI method does not include explicit anatomical or rotational alignment.
 
-The original five PPA3 source/data/requirements files remain byte-preserved in ppa3_legacy/. Their landmark regression is distinct from the image study. The generic evaluator adapts the HW3 workflow and uses empirical-ROC interpolation; do not describe it as the unchanged legacy grid evaluator.
+The findings do not establish demographic fairness, statistical significance or deployment-level authentication accuracy. A production authentication threshold has not been independently validated.
 
-## Data and limitations
-
-Olivetti contributes 400 grayscale 64x64 images. BMPD contributes 812 audited right-palm captures, with 56 exact duplicates and five low-contrast ROIs excluded. Thirty-nine eligible palm subjects map artificially to 39 face subjects. Each user/modality has 4 enrollment, 2 validation and 4 test images. Palms use F for enrollment/validation and S for test. There are 3,042 validation and 6,084 test claims.
-
-Sources: [Olivetti loader](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html), [BMPD listing](https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd), [BMPD paper](https://doi.org/10.1504/IJGUC.2019.102016).
-
-BMPD license metadata is Unknown. Public download/course preapproval and private GitHub/LFS access do not establish redistribution permission. Resolve source terms before public release or redistribution. Keep biometric samples/models out of the browser writing bundle. Other limitations include small sample size, dependent claims, artificial cross-person pairing, exact-only deduplication, palm session shift and heuristic crops without anatomical/rotation alignment.
-
-Keep environments, secrets, caches and temporary work out of commits. Preserve seed 42 and accepted artifacts. New useful comments should be informal lowercase inline comments with no space after #. No empty placeholder files are required.
+Dataset accessibility does not establish redistribution permission. Biometric assets must be handled in accordance with their original usage terms.

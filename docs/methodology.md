@@ -1,92 +1,134 @@
-# Implemented RQ1 methodology
+# Experimental Methodology
 
-This is the implemented Nafis baseline, not a description of future fusion/blur work.
+## Research Design
 
-## Sources and audit
+The study develops a multimodal authentication system through three connected experiments. RQ1 establishes individual modality baselines, RQ2 evaluates equal-weight score fusion, and RQ3 investigates the effect of increasing facial image blur while maintaining palmprint image quality.
 
-The October 15 course PDF lists Olivetti and BMPD as preapproved datasets. Olivetti is loaded through [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html): 400 original 64x64 grayscale images, 40 subjects, 10 images each. The downloaded array contains no exact decoded-pixel duplicates.
+All experiments use the same fixed simulated identities, sample partitions and authentication claims.
 
-BMPD is downloaded from the [creator's public Kaggle listing](https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd). The archive actually contains 1,612 entries, including 812 explicitly named right-palm images from 41 subjects. The listing's description says 1,640 images; its capture counts also do not fully match the archive. Actual filenames, CRC-verified bytes, decoded pixels and session labels govern this implementation. F and S are treated as first/second session tokens. No left palms enter the experiment.
+## Dataset Preparation
 
-The decoded-pixel audit identified 56 exact duplicate right-palm images and five additional images whose final 128x128 palm ROI standard deviation is below 0.02. After these exclusions 751 unique usable right-palm images remain. No cross-subject exact pixel duplicates were found. Exact deduplication does not establish the absence of near-duplicate acquisitions.
+The Olivetti dataset contains 400 grayscale face images from 40 individuals, with 10 images per individual and dimensions of 64x64 pixels.
 
-Kaggle's license field is Unknown. Public download and course preapproval are documented; redistribution permission has not been established. Raw images, ROI contact sheets and frozen feature/model files were originally kept local. An optional Git LFS upload workflow is now documented, but sharing still requires permitted source usage terms. Before publication or sharing images, the team must resolve source usage terms. Source article: Izadpanahkakhk et al., Novel mobile palmprint databases for biometric authentication, 2019, [DOI](https://doi.org/10.1504/IJGUC.2019.102016).
+The BMPD archive contains 812 right-palm captures from 41 subjects. The dataset audit excluded 56 exact decoded-pixel duplicates and five low-contrast palm regions, leaving 751 usable unique captures. Subjects 001 and 021 did not satisfy the fixed second-session sample requirements.
 
-## Palm preprocessing
+A seeded mapping pairs 39 eligible palmprint subjects with 39 face subjects. These are different physical individuals represented using artificial shared identity labels.
 
-Visual inspection rejected a fixed center crop because it often included fingers/background. The final method converts EXIF-oriented RGB images to a thumbnail with maximum side 512, segments skin using R>0.12, Cr>0.53, R>G and R>B, closes small gaps, retains the largest component and fills internal holes. Its maximum distance-transform location defines the palm center. A conservative square whose side equals that distance is cropped from the full-resolution grayscale image and bilinearly resized to 128x128. Minimum source crop side is 64 pixels. The algorithm is fixed across all subjects/splits.
+Dataset sources:
 
-Five contact sheets with representative first/second-session captures and crops covering all available subjects were reviewed before fitting. This is a heuristic interior crop, without anatomical landmarks or explicit rotation alignment. Variable pose, shadows and occasional edge background remain limitations. It should not be described as a validated anatomical ROI detector or an exhaustive manual review of every capture.
+- https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html
+- https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd
+- https://doi.org/10.1504/IJGUC.2019.102016
 
-## Shared identity and claim protocol
+## Sample Partitioning
 
-Seed 42 selects/maps distinct source identities under explicitly artificial shared labels. These face and palm captures are from different physical people. Subjects 001 and 021 lack the required distinct second-session palm captures, leaving 39 eligible palm subjects paired with 39 of the 40 Olivetti subjects. The mapping is persisted, not regenerated during experiment execution.
+Each simulated identity contributes four enrollment, two validation and four test samples per modality.
 
-Each modality/user has four enrollment, two validation and four test samples. Palms use only F-session images for enrollment/validation and only S-session images for testing. Face session labels are unavailable, so their samples use a seeded within-user split. Every selected decoded image and sample ID occurs in just one partition. Enrollment/validation share a palm session, so validation quality does not fully characterize the cross-session test shift.
+Palmprint enrollment and validation use first-session captures. Testing uses second-session captures. Facial samples are partitioned within each identity using random seed 42 because session labels are unavailable.
 
-Each validation/test face probe is paired with a same-simulated-user palm probe, then compared against all 39 claimed identities. Validation: 78 genuine and 2,964 impostor claims (3,042 total). Test: 156 genuine and 5,928 impostor claims (6,084 total). Ground truth is true simulated ID equals claimed simulated ID. CSV rows use unique trial_id plus claimed_user_id keys. Modality joins validate keys and labels; they never rely on incidental row order.
+| Partition | Images per Modality | Purpose |
+| --- | ---: | --- |
+| Enrollment | 156 | Model fitting and template construction |
+| Validation | 78 | Feature selection and score normalization |
+| Test | 156 | Independent performance evaluation |
 
-## Features, fitting and validation selection
+The committed manifests preserve the identity mapping, image hashes, sample partitions and authentication trial definitions.
 
-Face PCA is fit on the 156 enrollment images only, with float64 arithmetic, randomized SVD, seed 42 and no whitening. Candidate component counts are 16, 32 and 64. Palm candidates are HOG (9 orientations, 16x16 pixels/cell, 2x2 cells/block, L2-Hys, square-root transform, 1,764 features) and uniform LBP (16 neighbors, radius 2, 4x4 spatial histograms with 18 bins each and square-root normalization, 288 features).
+## Feature Extraction
 
-For each modality, each enrollment feature vector is L2-normalized, vectors are averaged within identity, then templates are L2-normalized. Probe-template cosine similarity is finite and higher-is-better. Similarities are not calibrated probabilities. Candidates are chosen by the lowest validation EER with positive genuine/impostor mean direction. Ties use the first candidate. Within the RQ1 runner, no test image is loaded or scored until those choices are frozen. The prior dataset audit decodes images for quality and duplicate checks, without model fitting or EER-guided preprocessing. The executed run selected 64 face components and HOG palms.
+### Face
 
-## Evaluation and reproduction
+Facial features are extracted using PCA with float64 arithmetic, randomized SVD, seed 42 and no whitening. Candidate dimensionalities of 16, 32 and 64 are compared using validation EER.
 
-The new evaluator extends PPA3's genuine/impostor labeling, pooled-variance d-prime and FAR/FRR/ROC structure while removing probability-range and Caltech-only plot assumptions. Final EER is the linearly interpolated FAR=FRR crossing on the empirical ROC with all distinct thresholds retained. AUC uses the same score direction. It is explicitly different from legacy PPA3's nearest point on a 500-threshold grid. Tied/discrete scores can yield an interpolated EER that no single deterministic threshold attains. Zero-variance d-prime is null for separated constants and zero for identical constants.
+The selected representation contains 64 principal components. PCA fitting uses enrollment images only.
 
-Each experiment writes a unique metrics/figures directory and refuses to overwrite an existing run ID. Outputs include paired raw validation/test scores, validation model comparisons, ROC and FAR/FRR curves, score distributions, summary metrics, manifest/source hashes, fit sample IDs and package versions. Local joblib files freeze the chosen enrollment models for Sakeeb's intake and blur experiments. Only load these self-generated, hash-verified joblib files; they are not general untrusted model inputs.
+### Palmprint
 
-Results are descriptive for this small selected population. No uncertainty interval, broad demographic fairness or deployable accuracy claim is made. RQ2 must assess whether equal-weight fusion helps rather than assume it; RQ3 must preserve the mapping, manifests, models, enrollment and validation-trained normalizers while blurring only raw face test probes. Neither RQ2 nor RQ3 was implemented in the original RQ1 scope; Nazmus's extension is documented below.
+Palm images undergo EXIF orientation correction and thumbnail generation with a maximum side length of 512 pixels.
 
-From the VS Code project-root terminal:
+The processing pipeline applies skin segmentation using fixed RGB and chrominance conditions, morphological closing, largest-component selection and hole filling. A distance transform identifies the interior palm region. A conservative grayscale crop is then resized to 128x128 pixels using bilinear interpolation.
 
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe experiments/rq1_baseline.py
-```
+HOG and LBP representations are compared using validation performance. The selected HOG configuration contains nine orientations, 16x16 pixels per cell, 2x2 cells per block, L2-Hys normalization and square-root transformation, producing 1,764 features.
 
-On another checkout, create Python 3.13 .venv, install requirements-lock.txt and run scripts/download_data.py. Keep the committed manifests and protocol_lock.json for reproduction; the experiment verifies their bytes and the decoded source images. Audit/build commands are for a new study or an intentional revision and refuse existing manifests by default. Use scripts/audit_data.py --rebuild followed by scripts/build_protocol.py --rebuild only when intentionally replacing the study. Review changes before accepting any new baseline.
+The ROI method is heuristic and does not provide explicit anatomical landmark or rotational alignment.
 
-The refactored RQ1 uses shared verified image loading and enrollment/scoring helpers. Models, matching, preprocessing, candidates and numerical evaluation are unchanged. Evaluator score descriptions can be supplied by later normalized/fusion callers. The accepted baseline pointer pins metadata and score hashes separately from latest-run discovery; the frozen loader also checks the feature/matching source, enrollment IDs and model bytes.
+## Enrollment and Authentication
 
-New runs capture provenance before work, record running/completed/failed status, recheck input hashes at completion and hash required artifacts. JSON writes replace files atomically. A forced termination may leave running status, so only completed runs should be consumed. The regular legacy check runs byte-identical copies in a temporary directory and leaves saved project evidence untouched; scripts/verify_legacy.py --export explicitly replaces that evidence.
+Enrollment feature vectors are L2-normalized and averaged within each simulated identity. The resulting identity templates are normalized again.
 
-## Nazmus RQ2/RQ3 extension
+Probe features are matched against enrolled templates using cosine similarity. Higher scores indicate stronger similarity. Scores are not calibrated probabilities.
 
-RQ2 retains the accepted 39-user mapping and all 6,084 test claims. Each modality
-is standardized using the mean and population standard deviation over its 3,042
-validation claim scores, including 78 genuine and 2,964 impostor claims. The
-imbalance is deliberately retained and disclosed. No test scores select the rule,
-weights, means or standard deviations. Scores are unbounded and not probabilities.
-Keyed, label-checked fusion is exactly half face z-score plus half palm z-score.
-The fitted parameters and source hashes are saved and reloaded before use.
+Each paired validation or test probe makes an authentication claim against all 39 enrolled identities. A claim is genuine when the simulated true identity equals the claimed identity.
 
-RQ2 is executed from hash-verified accepted score CSVs, not newly acquired images.
-Face/palm metrics match the accepted RQ1 metrics. Fusion EER is 7.69231%, compared
-with face 8.95749% and palm 23.80229%. The paired descriptive improvement motivates
-RQ3; it does not establish significance or robustness under blur.
+| Partition | Genuine Claims | Impostor Claims | Total |
+| --- | ---: | ---: | ---: |
+| Validation | 78 | 2,964 | 3,042 |
+| Test | 156 | 5,928 | 6,084 |
 
-RQ3 implementation proposes sigma 0, 0.5, 1, 2 and 3 source pixels. A validation-only
-preview and explicit inspection record precede the held-out sweep. Gaussian filtering
-uses SciPy, reflect boundaries and truncate=4, preserving original 64x64 [0,1]
-face arrays and dtype. Sigma zero returns an unchanged copy. Filtering precedes
-the frozen PCA transform. Enrollment, models, palm images/scores, claims and
-normalizers remain fixed. No fit method is called. The runner checks model-state
-hashes, input arrays, exact sigma-zero score equivalence and invariant palm scores
-and metrics. It recomputes saved metrics from exported score CSVs.
+All modality scores are joined using trial ID and claimed identity, with ground-truth labels checked for agreement.
 
-Actual RQ3 was subsequently executed twice after the real Olivetti NPZ and accepted
-face/palm model bytes were restored and hash-verified. The assistant inspected the
-validation preview before held-out scoring. Fusion EER at sigmas 0/0.5/1/2/3 was
-7.69231/7.69231/7.94534/8.40081/9.21053 percent. Palm EER stayed 23.80229 percent.
-The two runs matched every score exactly. Sigma-zero comparison with historical RQ2
-allows 1e-12 absolute roundoff (observed maximum 4.88e-14), preserving strict model
-hashes. Independent raw-palm/RQ1 reproduction subsequently passed numerically; see the final review evidence. See nazmus_results.md for the actual
-library-version warning, validation checks and limitations.
+## RQ1: Individual Authentication Performance
 
+Face-only and palmprint-only authentication are evaluated using clear images and the fixed test claim protocol.
 
-## November 16 integration verification
+Feature extraction candidates are selected from validation performance before held-out test scoring. The selected features, enrollment templates and baseline scores are preserved as verified artifacts.
 
-All three questions were independently executed in the original Python 3.13.2/scikit-learn 1.9.1 environment. RQ1 enrollment refitting exactly reproduced both original score tables; RQ2 and all RQ3 levels exactly reproduced Nazmus's tables and each new repeat. All 57 local tests and all 812 raw palm hashes pass. The new plan/preview is retained with actual source-input hashes. See docs/browser_handoff.md and results/metrics/main_integration_20261116 for current environment, methods, quantitative answers, limitations and report guidance. Historical cross-version verification details above remain historical evidence.
+The observed baseline EER values are 8.95749% for face authentication and 23.80229% for palmprint authentication.
+
+## RQ2: Equal-Weight Score-Level Fusion
+
+Each modality is standardized using its validation-score mean and population standard deviation.
+
+The normalization parameters are estimated over all 3,042 validation claims, retaining their genuine and impostor distribution. Test scores do not participate in fitting.
+
+The fusion equation is:
+
+    fusion_score = 0.5 * normalized_face_score + 0.5 * normalized_palm_score
+
+The fitted parameters and equal weights remain fixed. Scores are not clipped.
+
+Fusion achieved a test EER of 7.69231%, improving upon the observed individual modality baselines.
+
+## RQ3: Facial Image Degradation
+
+Gaussian blur is applied to copies of raw facial test probes before PCA transformation.
+
+The evaluated sigma values are 0, 0.5, 1, 2 and 3 pixels in the original 64x64 image space. Filtering uses SciPy Gaussian filtering with reflect boundaries and a truncation value of 4.
+
+Only facial test images change between conditions. Enrollment templates, feature extraction models, claim identities, palmprint scores and normalization parameters remain frozen.
+
+The validation blur preview was inspected through automated visual review before the recorded held-out sweep. The historical review records distinguish that process from human team acceptance.
+
+The implementation verifies sigma-zero equivalence within 1e-12 and exact palmprint score invariance.
+
+## Performance Evaluation
+
+The evaluation module adapts the original HW3/PPA3 workflow for image-based authentication and multimodal similarity scores.
+
+The reported metrics include:
+
+- Equal Error Rate (EER)
+- ROC Area Under the Curve (AUC)
+- D-prime using pooled score variance
+- Genuine and impostor score distributions
+- False Acceptance Rate and False Rejection Rate
+
+EER is calculated using linear interpolation at the empirical FAR/FRR crossing. This differs from the archived PPA3 threshold-grid implementation.
+
+## Reproducibility
+
+Experiment settings, score tables, model hashes, source hashes and artifact hashes are recorded in the run metadata.
+
+The November 16 integrated verification used Python 3.13.2, NumPy 2.3.2, SciPy 1.16.3, scikit-learn 1.9.1, scikit-image 0.26.0, Matplotlib 3.10.7, Pillow 13.0.0 and joblib 1.6.0.
+
+The experiments were executed on a Windows CPU environment with an AMD Ryzen 9 7940HS processor and approximately 15.2 GiB of RAM.
+
+## Study Limitations
+
+Artificial identity pairing does not establish real-world multimodal identity correlations. Authentication claims sharing probes or identities are dependent.
+
+The study does not establish statistical significance, demographic fairness or production-level security. Exact duplicate detection does not exclude all near-duplicate captures.
+
+The BMPD test partition introduces a session change, while facial session labels are unavailable. Gaussian blur represents controlled image degradation rather than physical motion blur.
+
+BMPD redistribution permission has not been established. Dataset access and storage must remain consistent with applicable usage terms.
