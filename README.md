@@ -6,7 +6,19 @@
 - **Institution:** University of South Florida
 - **Semester:** Fall 2026
 - **Instructor:** Dr. Tempestt Neal
-- **Team:** Nafis Anwar, Nazmus, Diego, Mikaela, Sienah
+- **Team:** The Classifiers
+
+## Team Contributions
+
+| Team Member | Role | Responsibilities |
+| --- | --- | --- |
+| Nafis Anwar | Lead Developer and Project Coordinator | 60% of engineering implementation, project architecture, dataset preparation, facial authentication, baseline evaluation, system integration, repository management and technical verification |
+| Nazmus Sakeeb | Developer and Evaluation Lead | 40% of engineering implementation, palmprint authentication development, score-level fusion, facial blur experiments and performance evaluation |
+| Diego Laverdy | Research and Methodology Lead | Dataset research, literature review, citations and experimental methodology |
+| Mikaela Kelly | Results and Report Lead | Results analysis, tables, figures, technical report writing and document organization |
+| Sienah Spears | Presentation and Quality Assurance Lead | Presentation development, ethics statement, references, testing coordination and final quality review |
+
+The 60/40 allocation refers specifically to software development and engineering work, rather than overall project contribution.
 
 ## Project Overview
 
@@ -179,6 +191,18 @@ Combined experimental results and independent verification evidence are availabl
 - [Reproduction comparison](results/metrics/main_integration_20261116/reproduction_comparison.json)
 
 ## Testing and Verification
+
+The complete saved-study verification workflow can be executed with one command:
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts/verify_study.py
+```
+
+This command verifies RQ1 artifact integrity, all 812 raw palmprint file hashes, the automated test suite, RQ2 repeatability and the saved RQ3 experimental results.
+
+Verification outputs are written to a new temporary directory without replacing the recorded experimental artifacts.
+
+Individual verification commands are provided below.
 
 ```powershell
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v

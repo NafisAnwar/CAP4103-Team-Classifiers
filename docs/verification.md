@@ -49,6 +49,16 @@ The test suite verifies:
 - Evaluation metrics and run artifact integrity.
 - Original PPA3 regression behavior.
 
+## Single-Command Verification
+
+The complete saved-study verification workflow is available through:
+
+```powershell
+.\.venv\Scripts\python.exe -B scripts/verify_study.py
+```
+
+The utility integrates baseline artifact verification, raw palmprint file integrity, automated tests, RQ2 repeatability and the RQ2/RQ3 saved-score audit. Existing experimental results are preserved.
+
 ## Reproducing the Verification
 
 Run the automated tests from the repository root:
