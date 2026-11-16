@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "sigmas": [
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    3.0
+  ],
+  "sigma_units": "original 64x64 face pixels",
+  "mode": "reflect",
+  "truncate": 4.0,
+  "implementation": "scipy.ndimage.gaussian_filter",
+  "order": "audited raw [0,1] face pixels -> blur -> frozen PCA -> frozen cosine templates",
+  "selection_split": "validation",
+  "sample_ids": [
+    "face_004",
+    "face_006",
+    "face_014",
+    "face_018"
+  ],
+  "sample_pixel_sha256": {
+    "face_004": "318d34c9c5d806ead2e66f880982fc0d613b5f667bdd6a07644b28b6e82b0619",
+    "face_006": "7ddae41401f98e07b660438f7d8ffceae9b6469608dee30080d64b7565bc5f35",
+    "face_014": "2ab480f57e73c4f7512b6606b0aec29f2430f5f1e893aaf6eb8105f51968fd5b",
+    "face_018": "d87988322741368cda9e35806bf18fc6820e11bbdc84fbcefdf74c3441f4aefd"
+  },
+  "baseline_id": "rq1_20261112T151158Z_e192d8",
+  "manifest_sha256": {
+    "config.json": "6864b459cac8497adedd6d7f80cdfc42977127ad9862c789e8de2947c8239c16",
+    "dataset_summary.json": "09d4598d61c9f16c9de70dac8c82dff237d491df70241679594fd4e1f89b3371",
+    "face_samples.csv": "469dbf86e5bfff1a56c409a0d174dcf19c68b15f7cfd4d71998e27a0322f411a",
+    "identity_mapping.csv": "3423b283a3cc39a5461f56995dc25a193d61d47b6f6170227974bbaa09896786",
+    "palm_samples.csv": "5bbff63ddd66b29dfffee1899775ca14bfa8a821a2dce09449053247372a0878",
+    "palm_subject_counts.csv": "6be5c06e9c0a23cdc791070b3adc0ebb68294f7bbdef64e144e47b6ed0cf92fb",
+    "partitions.csv": "80ab81057fb33804b886f48d619c16e3f44edb9e416c0cbc058a8cf6242a5d27",
+    "test_trials.csv": "79a5a27451c3c0ff6dcd12a2fea81881fd05e0d37eb4f55a219f18a66a4bda9b",
+    "validation_trials.csv": "7362fd31bd3b1a7e260f5c78eec9c99c2d0c11b5ab9268af33cb04bde899ea12"
+  },
+  "blur_code_sha256": "79d8774e8832463b04556dd360be3656dbd17e436db2008f2c9e0c43abc096ed",
+  "preview_sha256": "8c850997da4b6875b3de3d4f2c7101c77a5d52c708c8f8d67d49787f0d4bbe23",
+  "reviewed": true,
+  "review_note": "Validation preview inspected on November 16: sigma 0.5 slightly softens fine texture, sigma 1 smooths eye and mouth detail, sigma 2 strongly softens fine features, and sigma 3 retains face outline with heavily blurred eyes and mouths. Retain the existing predeclared levels; no sigma choices changed. Automated visual inspection; human team acceptance remains separate."
+}

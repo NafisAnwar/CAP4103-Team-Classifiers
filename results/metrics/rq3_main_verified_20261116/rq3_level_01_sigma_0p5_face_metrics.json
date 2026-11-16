@@ -1,0 +1,12 @@
+{
+  "auc": 0.9708607996816498,
+  "eer": 0.08974358974358976,
+  "d_prime": 2.8161816778974798,
+  "genuine_count": 156,
+  "impostor_count": 5928,
+  "genuine_mean": 0.7031599796368501,
+  "impostor_mean": -0.015955287213560206,
+  "score_direction_check": "passed",
+  "eer_method": "linear_interpolation_empirical_roc",
+  "score_type": "cosine_similarity_higher_is_better"
+}

@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "rq2_run": "rq2_main_verified_20261116",
+  "rq3_runs": [
+    {
+      "run_id": "rq3_main_verified_20261116",
+      "rows": 30420,
+      "sigmas": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        3.0
+      ],
+      "sigma_zero_max_difference": 4.879430193227563e-14
+    },
+    {
+      "run_id": "rq3_main_repeat_20261116",
+      "rows": 30420,
+      "sigmas": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        3.0
+      ],
+      "sigma_zero_max_difference": 4.879430193227563e-14
+    }
+  ],
+  "repeat_exact": true,
+  "verified": [
+    "completed artifact hashes",
+    "exact score schemas",
+    "all trial keys and labels",
+    "validation-only fitted parameters",
+    "frozen equal-weight equation for every row",
+    "sigma-zero scores and metrics within 1e-12",
+    "exact unchanged palm scores",
+    "all exported metrics recomputed",
+    "all repeated scores identical"
+  ],
+  "scope": "saved-score integration audit; raw-palm refitting and human team acceptance are separate"
+}

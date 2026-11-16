@@ -20,5 +20,25 @@
   "PPA 3.zip": {
     "source": "C:\\Users\\anwar\\Desktop\\CAP4103 - Mobile Biometrics\\PPA\\PPA 3\\PPA 3.zip",
     "sha256": "59a96f641375137e92ae80c8e1fd5f78315c2e698c207805e80d8277b7b4d061"
+  },
+  "CAP4103_Report_Rubric.pdf": {
+    "source": "CAP4103_Report_Rubric.pdf",
+    "sha256": "2dd4a6002e12421e2d4a882109b28af2e57108e7fb4bf33f34bd1f6985146279",
+    "added_for": "November 16 report and presentation continuation"
+  },
+  "MB_ReportTemplate.docx": {
+    "source": "MB_ReportTemplate.docx",
+    "sha256": "37772cb8c5e0381fafd6ad61cd996680d3d6eb3cd1857252cd703427d2bddc58",
+    "added_for": "November 16 report and presentation continuation"
+  },
+  "Project Description v2.pdf": {
+    "source": "Project Description v2.pdf",
+    "sha256": "c1d511460565021b8824b98ead5d18dc47d9fbf2a9c218cb58a435054b527912",
+    "added_for": "November 16 report and presentation continuation"
+  },
+  "Biometrics_Presentation_Template.pptx": {
+    "source": "Biometrics_Presentation_Template.pptx",
+    "sha256": "9320106cefabd09b09a30c4634472cf22c6f0331656d95b334188604029fc044",
+    "added_for": "November 16 report and presentation continuation"
   }
 }

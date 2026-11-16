@@ -1,3 +1,5 @@
+Current update: all planned N1-N7 and S1-S5 engineering work is now implemented and verified. Independent review is in docs/integration_review.md; human team acceptance and report/presentation/submission are still separate. This roadmap retains the original phase allocation.
+
 # Developer roadmap and gates
 
 Detailed source plan: `reference/CAP4103_PPA3_Extension_Implementation_Plan.txt`. Nafis's implementation checklist is complete locally; Nazmus's engineering implementation and numerical reproduction are complete; human team acceptance remains separate. docs/project_status.md is the authoritative current progress record.
@@ -31,7 +33,7 @@ Nafis implements N1-N7 before transfer (60 units). Sakeeb implements S1-S5 after
 
 ## Sakeeb intake and completion checklist
 
-- [x] Reproduce PPA3 and RQ1 from the hash-verified source/archive and raw images. Numerical agreement verified; exact Git commit unavailable and cross-version PCA serialization differs.
+- [x] Reproduce PPA3 and RQ1 from the hash-verified source/archive and raw images. Original archive limitations are historical; fetched branch 2c849dd and the original team environment are now independently verified.
 - [x] Join unique trial/claim keys and assert label agreement.
 - [x] Implement validation-only fitting and frozen parameters; execute RQ2.
 - [x] Compute equal-weight fusion and measure RQ2 from verified accepted scores.
@@ -41,4 +43,4 @@ Nafis implements N1-N7 before transfer (60 units). Sakeeb implements S1-S5 after
 - [x] Export checked master metrics/figures and document findings/limitations.
 - [x] Complete clean-integration QA and prepare verified methods/results for the report team.
 
-Current completion evidence and blockers are in docs/nazmus_results.md. Independent raw-palm/RQ1 refitting and real RQ3 are verified numerically. Human group acceptance and actual Git upload remain pending.
+Current integration evidence is in docs/integration_review.md and results/metrics/main_integration_20261116. Raw-palm integrity, RQ1 refitting and real RQ3 are independently verified in the original environment. The browser handoff identifies remaining human report/presentation/acceptance steps; the delivery record confirms the final main upload.

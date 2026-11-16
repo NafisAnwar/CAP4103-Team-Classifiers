@@ -1,3 +1,5 @@
+Historical transfer record. Nazmus's code is now integrated and verified; use docs/browser_handoff.md and docs/project_status.md for current status. Earlier pending upload/implementation steps below describe the original transfer.
+
 CAP4103 engineering handoff for Nazmus Sakeeb
 
 Prepared November 12, 2026. Project: Combining Face and Palmprint Scores for Authentication Under Image Blur. Working editor: VS Code. Repository: https://github.com/NafisAnwar/CAP4103-Team-Classifiers. Transfer branch: main. Baseline upload checkpoint after the owner's email-privacy rewrite: f4710e5. Record the new main commit after these documents and any research assets are pushed. Earlier handoffs used commit IDs from before that rewrite; use current main ancestry for checkout.

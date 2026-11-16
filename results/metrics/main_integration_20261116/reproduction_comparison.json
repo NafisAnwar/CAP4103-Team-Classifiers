@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "absolute_tolerance": 1e-12,
+  "original_vs_local_max_differences": {
+    "rq1_test": 0.0,
+    "rq1_validation": 0.0,
+    "rq2": 0.0,
+    "rq3": {
+      "0": 0.0,
+      "0.5": 0.0,
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0
+    }
+  },
+  "raw_palm_file_hashes_verified": 812,
+  "scope": "actual enrollment refit, actual frozen-model face blur and saved-score/metric audits"
+}

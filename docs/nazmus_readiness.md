@@ -1,3 +1,5 @@
+Historical transfer record. Nazmus's code is now integrated and verified; use docs/browser_handoff.md and docs/project_status.md for current status. Earlier pending upload/implementation steps below describe the original transfer.
+
 # Nazmus repository-readiness checklist
 
 ## Scope and status

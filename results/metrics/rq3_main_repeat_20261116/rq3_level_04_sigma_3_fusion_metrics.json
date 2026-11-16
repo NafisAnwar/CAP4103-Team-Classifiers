@@ -1,0 +1,12 @@
+{
+  "auc": 0.9737036748676424,
+  "eer": 0.09210526315789473,
+  "d_prime": 2.7620974028467984,
+  "genuine_count": 156,
+  "impostor_count": 5928,
+  "genuine_mean": 1.6808004148796998,
+  "impostor_mean": -0.0395289263587903,
+  "score_direction_check": "passed",
+  "eer_method": "linear_interpolation_empirical_roc",
+  "score_type": "equal_weight_validation_zscore_fusion"
+}

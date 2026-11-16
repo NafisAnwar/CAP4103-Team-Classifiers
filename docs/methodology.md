@@ -85,3 +85,8 @@ The two runs matched every score exactly. Sigma-zero comparison with historical 
 allows 1e-12 absolute roundoff (observed maximum 4.88e-14), preserving strict model
 hashes. Independent raw-palm/RQ1 reproduction subsequently passed numerically; see the final review evidence. See nazmus_results.md for the actual
 library-version warning, validation checks and limitations.
+
+
+## November 16 integration verification
+
+All three questions were independently executed in the original Python 3.13.2/scikit-learn 1.9.1 environment. RQ1 enrollment refitting exactly reproduced both original score tables; RQ2 and all RQ3 levels exactly reproduced Nazmus's tables and each new repeat. All 57 local tests and all 812 raw palm hashes pass. The new plan/preview is retained with actual source-input hashes. See docs/browser_handoff.md and results/metrics/main_integration_20261116 for current environment, methods, quantitative answers, limitations and report guidance. Historical cross-version verification details above remain historical evidence.

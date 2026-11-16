@@ -1,3 +1,5 @@
+Historical November 13 results and environment record. These findings were independently reproduced on November 16; see docs/browser_handoff.md, docs/integration_review.md and docs/project_status.md for current integrated status. Pending upload statements below describe the original transfer.
+
 # Nazmus's methods and verified results
 
 ## Completion boundary

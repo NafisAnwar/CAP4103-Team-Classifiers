@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "verified_at_utc": "2026-11-16T07:07:27.667664+00:00",
+  "tests_run": 57,
+  "tests_skipped": 0,
+  "files_changed_by_tests": [],
+  "dependency_check": "No broken requirements found.",
+  "supplied_zip_sha256": "2836c908976cb6f7b04c7ebc222f33e6f35cc78fd9a8c3a9f6ec9147809312c0",
+  "zip_and_branch_matching_files": 1234,
+  "nazmus_branch_commit": "2c849ddfd5c41f18b170ca8818e1c066d6905f02",
+  "verified_rq1": "rq1_main_verified_20261116",
+  "verified_rq2": "rq2_main_verified_20261116",
+  "verified_rq3": "rq3_main_verified_20261116",
+  "accepted_model_hashes_verified": true,
+  "preserved_legacy_hashes_verified": true,
+  "score_repeatability": "exact",
+  "score_equality_with_submitted_work": "exact",
+  "course_sources": [
+    "CAP4103_Report_Rubric.pdf",
+    "Project Description v2.pdf",
+    "MB_ReportTemplate.docx",
+    "Biometrics_Presentation_Template.pptx"
+  ]
+}

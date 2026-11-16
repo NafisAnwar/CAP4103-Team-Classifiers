@@ -129,6 +129,41 @@
         }
       },
       "problemMatcher": []
+    },
+    {
+      "label": "RQ2: run fusion",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "experiments/rq2_fusion.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONIOENCODING": "utf-8"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "RQ3: run verified blur",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "experiments/rq3_blur.py",
+        "run",
+        "--rq2-run",
+        "rq2_main_verified_20261116",
+        "--plan",
+        "data/processed/blur_plans/integration_20261116/blur_plan.json"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONIOENCODING": "utf-8"
+        }
+      },
+      "problemMatcher": []
     }
   ]
 }
