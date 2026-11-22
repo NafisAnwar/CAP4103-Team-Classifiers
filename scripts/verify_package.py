@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 import hashlib
 import subprocess
 import sys
@@ -66,7 +67,7 @@ def verify_baseline_metrics():
         )
 
 
-def main():
+def main(repository=False):
     work = root / "work"
     work.mkdir(exist_ok=True)
 
@@ -74,7 +75,12 @@ def main():
 
     print("\nCAP4103 Submission Verification", flush=True)
 
-    verify_package_integrity()
+    if repository:
+        if not (root / ".git").exists():
+            raise ValueError("Repository mode is restricted to a Git checkout.")
+        print("Development checkout: no submission ZIP checksum manifest.", flush=True)
+    else:
+        verify_package_integrity()  # an extracted submission must always verify its checksum manifest
     verify_baseline_metrics()
 
     print("\nVerifying RQ2 repeatability", flush=True)
@@ -109,4 +115,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repository", action="store_true", help="Verify a development Git checkout")
+    main(parser.parse_args().repository)

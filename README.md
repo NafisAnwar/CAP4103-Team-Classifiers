@@ -8,6 +8,21 @@
 
 **Team:** The Classifiers
 
+## Unified execution
+
+On Windows, double-click `RUN_PROJECT.cmd`. The launcher creates a Python 3.13 virtual environment if needed, checks pinned dependencies, and opens the interactive execution menu. In an existing configured environment, run `python main.py`.
+
+| Command | Action |
+|---|---|
+| `python main.py verify` | Verify the submitted score tables and run available tests |
+| `python main.py rq1` | Reproduce individual modality authentication |
+| `python main.py rq2` | Reproduce RQ1, then fit the validation normalizer and fuse scores |
+| `python main.py full` | Reproduce RQ1, RQ2 and all five RQ3 facial blur conditions |
+| `python main.py download` | Obtain the authorized original datasets |
+| `python main.py tests` | Run the automated test suite |
+
+Image-level commands require the original datasets. Supply `--data-root PATH` to use an existing dataset directory containing `data/raw`. New results are saved in a fresh workspace under `work/`; saved experimental evidence is never overwritten.
+
 ### Team Members
 
 - Nafis Anwar

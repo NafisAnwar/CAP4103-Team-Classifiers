@@ -61,7 +61,24 @@ def compare_metrics(actual, expected):
                 raise ValueError("Reproduction claim count differs.")
 
 
-def reproduce(data_root):
+def finish(destination, **experiments):
+    summary = {
+        "status": "passed",
+        "experiments": [name.upper() for name in experiments],
+        "score_absolute_tolerance": 1e-8,
+        "metric_absolute_tolerance": 1e-7,
+        "original_results_preserved": True,
+    }
+    summary.update({f"{name}_metrics": result["test_metrics"] for name, result in experiments.items()})
+    write_json(destination / "reproduction_summary.json", summary)
+    print(f"\nPASS: IMAGE-LEVEL REPRODUCTION ({', '.join(summary['experiments'])})")
+    print(f"Independent reproduction outputs: {destination}")
+    return destination
+
+
+def reproduce(data_root, through="rq3"):
+    if through not in ("rq1", "rq2", "rq3"):
+        raise ValueError("Unknown reproduction endpoint.")
     data_root = Path(data_root).resolve()
 
     work = root / "work"
@@ -126,10 +143,8 @@ def reproduce(data_root):
         )["test_metrics"]
     )
 
-    # register the newly fitted baseline inside the isolated reproduction
-    # directory only, without touching the original experimental records
     write_json(
-        destination / "results/metrics/rq1_accepted.json",
+        destination / "results/metrics/rq1_accepted.json",  # register only the new baseline within the isolated workspace
         {
             "run_id": "rq1_reproduced",
             "metadata": metadata.relative_to(destination).as_posix(),
@@ -147,6 +162,8 @@ def reproduce(data_root):
     )
 
     print("PASS: RQ1 reproduced from original images", flush=True)
+    if through == "rq1":
+        return finish(destination, rq1=rq1)
 
     print("\nRQ2: Recomputing normalization and fusion", flush=True)
 
@@ -176,6 +193,8 @@ def reproduce(data_root):
     )
 
     print("PASS: RQ2 reproduced using newly computed scores", flush=True)
+    if through == "rq2":
+        return finish(destination, rq1=rq1, rq2=rq2)
 
     print("\nRQ3: Reproducing the facial blur experiment", flush=True)
 
@@ -234,23 +253,8 @@ def reproduce(data_root):
         )["test_metrics"]
     )
 
-    write_json(
-        destination / "reproduction_summary.json",
-        {
-            "status": "passed",
-            "experiments": ["RQ1", "RQ2", "RQ3"],
-            "score_absolute_tolerance": 1e-8,
-            "metric_absolute_tolerance": 1e-7,
-            "original_results_preserved": True,
-            "rq1_metrics": rq1["test_metrics"],
-            "rq2_metrics": rq2["test_metrics"],
-            "rq3_metrics": rq3["test_metrics"]
-        }
-    )
-
     print("PASS: RQ3 reproduced across all five blur conditions.")
-    print("\nPASS: COMPLETE IMAGE-LEVEL REPRODUCTION")
-    print(f"Independent reproduction outputs: {destination}")
+    return finish(destination, rq1=rq1, rq2=rq2, rq3=rq3)
 
 
 if __name__ == "__main__":
@@ -262,4 +266,7 @@ if __name__ == "__main__":
         help="Project directory containing authorized original datasets"
     )
 
-    reproduce(parser.parse_args().data_root)
+    parser.add_argument("--through", choices=["rq1", "rq2", "rq3"], default="rq3",
+                        help="Stop after the selected experiment; dependencies run first")
+    args = parser.parse_args()
+    reproduce(args.data_root, args.through)
