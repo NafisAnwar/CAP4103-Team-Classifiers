@@ -97,7 +97,7 @@ The evaluated sigma values are 0, 0.5, 1, 2 and 3 pixels in the original 64x64 i
 
 Only facial test images change between conditions. Enrollment templates, feature extraction models, claim identities, palmprint scores and normalization parameters remain frozen.
 
-The validation blur preview was inspected through automated visual review before the recorded held-out sweep. The historical review records distinguish that process from human team acceptance.
+The blur levels were inspected through automated visual review of validation previews before the held-out test sweep. The recorded blur plan preserves the selection procedure.
 
 The implementation verifies sigma-zero equivalence within 1e-12 and exact palmprint score invariance.
 

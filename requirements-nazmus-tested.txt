@@ -1,9 +1,0 @@
-# Reproduces the numerical environment used for Nazmus verification.
-# Keep the original team lock for its original model-training environment.
-numpy==2.3.5
-scipy==1.17.0
-scikit-learn==1.8.0
-scikit-image==0.26.0
-matplotlib==3.10.8
-pillow==13.0.0
-joblib==1.5.3

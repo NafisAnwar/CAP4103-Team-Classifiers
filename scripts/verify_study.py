@@ -106,7 +106,7 @@ def main():
     print('\n[4/5] RQ2 fusion repeatability', flush=True)
 
     run_python([
-        'scripts/verify_nazmus.py',
+        'scripts/verify_fusion.py',
         '--first', rq2_run,
         '--second', rq2_repeat,
         '--output', str(output / 'rq2_repeatability.json')

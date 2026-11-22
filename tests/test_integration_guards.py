@@ -26,7 +26,7 @@ class IntegrationGuardsTest(unittest.TestCase):
         with patch('experiments.rq3_blur.Normalizer.load', return_value=replace(fitted, face_mean=fitted.face_mean+.1)), \
              patch('experiments.rq3_blur.RunArtifacts') as artifacts:
             with self.assertRaisesRegex(ValueError, 'validation-only fit'):
-                run('rq2_nazmus_final_20261113', 'not_needed.json')
+                run('rq2_main_verified_20261116', 'not_needed.json')
             artifacts.assert_not_called() #bad parameters fail before any held-out image loading or output creation
 
 

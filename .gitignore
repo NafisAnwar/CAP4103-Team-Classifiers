@@ -15,4 +15,4 @@ Thumbs.db
 work/
 tmp/
 
-.venv-nazmus/
+.venv-*/
