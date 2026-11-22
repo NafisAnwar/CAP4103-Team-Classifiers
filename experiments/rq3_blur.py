@@ -14,16 +14,16 @@ from src.blur import prepare_plan, load_plan, frozen_face_scores, assert_equal_s
 from src.fusion_reporting import evaluate_conditions, verify_metrics, comparison_plot
 
 
-def run(rq2_run_id, plan_path, run_id=None, root=ROOT, model_run_id=None):
+def run(rq2_run_id, plan_path, run_id=None, root=ROOT, model_run_id=None):  # reuse frozen models and normalization while changing only facial probe blur
     root, plan_path = Path(root), Path(plan_path)
     pointer, baseline, config, partitions, trials, tables = accepted_scores(root)
     rq2_folder, rq2_metadata = completed_run(root, rq2_run_id, 'rq2')
     normalizer_path = rq2_folder/'normalizer.json'
-    normalizer = Normalizer.load(normalizer_path)
+    normalizer = Normalizer.load(normalizer_path)  # restore the frozen normalization from rq2 rather than refitting on degraded probes
     fitted = Normalizer.fit(tables['validation'], trials['validation'], split='validation',
                             validation_sha256=pointer['score_sha256']['validation_scores.csv'], baseline_id=pointer['run_id'])
     if asdict(normalizer) != asdict(fitted):
-        raise ValueError('RQ2 normalizer is not the accepted validation-only fit') #check the parameters, not just their recorded labels
+        raise ValueError('RQ2 normalizer is not the accepted validation-only fit')  # check the parameters, not just their recorded labels
     if (normalizer.baseline_id != pointer['run_id'] or rq2_metadata['baseline_id'] != pointer['run_id']
         or normalizer.validation_sha256 != pointer['score_sha256']['validation_scores.csv']
         or asdict(normalizer) != rq2_metadata['normalization']):
@@ -32,20 +32,20 @@ def run(rq2_run_id, plan_path, run_id=None, root=ROOT, model_run_id=None):
                    root/'data/processed/models'/model_run_id/f'{m}.joblib'
                    for m,info in baseline['models'].items()]
     require_assets(models_paths + [root/'data/raw/face/olivetti.npz'])
-    models, _ = load_frozen_models(root,model_run_id=model_run_id)
+    models, _ = load_frozen_models(root,model_run_id=model_run_id)  # load only the accepted enrollment-fitted authentication models
     plan = load_plan(plan_path,root)
     plan_hash, norm_hash = text_sha256(plan_path), text_sha256(normalizer_path)
     models_hash = {m:joblib.hash(model) for m,model in models.items()}
-    faces = dataset_images([r for r in partitions if r['modality']=='face'], 'test',root)['face']
+    faces = dataset_images([r for r in partitions if r['modality']=='face'], 'test',root)['face']  # load the held-out facial probes for the controlled blur sweep
     clear = read_csv(rq2_folder/'rq2_fusion_scores.csv')
     with RunArtifacts(root,run_id or 'rq3_'+uuid.uuid4().hex[:12],latest_name='rq3_latest.json') as artifacts:
         write_json(artifacts.metrics_dir/'blur_plan.json',plan)
-        sweeps = frozen_face_scores(models['face'],faces,trials['test'],plan['sigmas'])
+        sweeps = frozen_face_scores(models['face'],faces,trials['test'],plan['sigmas'])  # generate face match scores for all selected gaussian sigma values
         all_rows, summary = [], []
         for index, sigma in enumerate(plan['sigmas']):
-            rows = fuse_scores(sweeps[sigma],tables['test'],normalizer,trials['test'])
-            assert_equal_scores(rows,clear,['palm_score_raw','palm_score_normalized'])
-            if sigma == 0:
+            rows = fuse_scores(sweeps[sigma],tables['test'],normalizer,trials['test'])  # reuse the original palm claims and combine them with the blurred face scores
+            assert_equal_scores(rows,clear,['palm_score_raw','palm_score_normalized'])  # enforce the unchanged palm modality as an experimental control
+            if sigma == 0:  # confirm the clear-image control reproduces the rq2 scores
                 zero_difference = assert_equal_scores(rows,clear,['face_score_raw','palm_score_raw','face_score_normalized',
                                                'palm_score_normalized','fusion_score'], atol=1e-12)
             exported = [{k:row[k] for k in RQ3_FIELDS if k!='blur_sigma'} for row in rows]
@@ -53,7 +53,7 @@ def run(rq2_run_id, plan_path, run_id=None, root=ROOT, model_run_id=None):
                 row['blur_sigma'] = sigma
             all_rows.extend(exported)
             condition = f'rq3_level_{index:02d}_sigma_{sigma:g}'.replace('.','p')
-            summary.extend(evaluate_conditions(rows,artifacts,condition,sigma))
+            summary.extend(evaluate_conditions(rows,artifacts,condition,sigma))  # apply the same hw3-derived metrics to each condition and modality
         scores_path = artifacts.metrics_dir/'rq3_blur_scores.csv'
         write_csv(scores_path,all_rows,RQ3_FIELDS)
         exported = read_csv(scores_path)
@@ -61,7 +61,7 @@ def run(rq2_run_id, plan_path, run_id=None, root=ROOT, model_run_id=None):
             subset = [r for r in exported if float(r['blur_sigma'])==sigma]
             verify_metrics(subset,[r for r in summary if r['blur_sigma']==sigma])
         zero_rows = [r for r in exported if float(r['blur_sigma']) == 0]
-        verify_metrics(zero_rows, rq2_metadata['test_metrics']) #roundoff must not change the clear-condition metrics
+        verify_metrics(zero_rows, rq2_metadata['test_metrics'])  # roundoff must not change the clear-condition metrics
         palm_metrics = [r for r in summary if r['modality']=='palm']
         for field in ['eer','auc','d_prime','genuine_count','impostor_count']:
             if any(r[field] != palm_metrics[0][field] for r in palm_metrics):

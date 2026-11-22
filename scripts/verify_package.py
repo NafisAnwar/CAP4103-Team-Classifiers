@@ -12,7 +12,7 @@ from src.fusion import accepted_scores
 from src.evaluation import evaluate_labeled
 
 
-def run_python(*args):
+def run_python(*args):  # run verification subprocesses with the same environment and fail on nonzero exit
     subprocess.run(
         [sys.executable, "-B", *args],
         cwd=root,
@@ -20,7 +20,7 @@ def run_python(*args):
     )
 
 
-def verify_package_integrity():
+def verify_package_integrity():  # check the stored byte hash for every submitted file
     manifest = root / "SHA256SUMS.txt"
 
     if not manifest.exists():
@@ -42,7 +42,7 @@ def verify_package_integrity():
     print(f"PASS: {count} packaged file checksums", flush=True)
 
 
-def verify_baseline_metrics():
+def verify_baseline_metrics():  # recalculate baseline metrics directly from accepted raw scores
     _, baseline, _, _, _, tables = accepted_scores(root)
     rows = tables["test"]
 
@@ -67,7 +67,7 @@ def verify_baseline_metrics():
         )
 
 
-def main(repository=False):
+def main(repository=False):  # audit submitted evidence and execute the available automated tests
     work = root / "work"
     work.mkdir(exist_ok=True)
 

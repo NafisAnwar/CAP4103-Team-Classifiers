@@ -10,8 +10,8 @@ import tempfile
 from pathlib import Path
 
 
-class DatasetTest(unittest.TestCase):
-    def test_shared_image_loader_checks_pixels_and_preserves_the_palm_crop(self):
+class DatasetTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_shared_image_loader_checks_pixels_and_preserves_the_palm_crop(self):  # verify that shared image loader checks pixels and preserves the palm crop
         pixels = np.full((300, 260, 3), [180, 120, 95], dtype=np.uint8)
         face = np.zeros((1, 64, 64), dtype=np.float32)
         with tempfile.TemporaryDirectory() as folder:
@@ -28,14 +28,14 @@ class DatasetTest(unittest.TestCase):
                 np.testing.assert_array_equal(images['palm']['palm'], crop_palm(Image.fromarray(pixels)))
                 rows[1]['pixel_sha256'] = 'changed'
                 with self.assertRaisesRegex(ValueError, 'changed since audit'):
-                    dataset_images(rows, 'validation', root) #a modified source never silently enters a later experiment
+                    dataset_images(rows, 'validation', root)  # a modified source never silently enters a later experiment
 
-    def test_palm_labels_are_explicit(self):
+    def test_palm_labels_are_explicit(self):  # verify that palm labels are explicit
         self.assertEqual(parse_palm_name('032_S_R_19.JPG'), {'subject': '032', 'session': 'S', 'hand': 'R', 'number': '19'})
         with self.assertRaises(ValueError):
             parse_palm_name('unknown_19.JPG')
 
-    def test_roi_rejects_missing_skin_and_crops_interior(self):
+    def test_roi_rejects_missing_skin_and_crops_interior(self):  # verify that roi rejects missing skin and crops interior
         pixels = np.zeros((300, 260, 3), dtype=np.uint8)
         pixels[40:260, 30:230] = [180, 120, 95]
         roi = crop_palm(Image.fromarray(pixels))

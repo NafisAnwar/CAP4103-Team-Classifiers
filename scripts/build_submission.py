@@ -19,7 +19,7 @@ runs = [
 ]
 
 
-def include(relative):
+def include(relative):  # allowlist only project source, manifests and accepted experimental evidence
     if relative == "scripts/build_submission.py":
         return False
 
@@ -76,7 +76,7 @@ def include(relative):
     return False
 
 
-def launcher(commands):
+def launcher(commands):  # build a windows command entry point that preserves the process return code
     return (
         '@echo off\n'
         'cd /d "%~dp0"\n'
@@ -85,7 +85,7 @@ def launcher(commands):
     )
 
 
-def build(destination):
+def build(destination):  # stage the curated package, record its checksums and generate a zip archive
     destination = Path(destination).resolve()
     destination.mkdir(parents=True, exist_ok=False)
 

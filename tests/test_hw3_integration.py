@@ -9,13 +9,13 @@ from src.evaluation import Evaluator
 from src.files import ROOT, read_csv
 
 
-class HW3IntegrationTest(unittest.TestCase):
-    def test_original_hw3_numerical_methods_are_preserved(self):
+class HW3IntegrationTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_original_hw3_numerical_methods_are_preserved(self):  # verify that original hw3 numerical methods are preserved
         original = (ROOT / 'docs/hw3_original.py.txt').read_bytes()
         self.assertEqual(hashlib.sha256(original).hexdigest(),
                          '35a1e1ea0448f3f4a64f9d353284928b8b2bb7e9395bf410e5807052bd5d43f4')
 
-        def methods(source):
+        def methods(source):  # support the deterministic test fixture and its assertions
             tree = ast.parse(source)
             cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == 'Evaluator')
             result = {}
@@ -31,7 +31,7 @@ class HW3IntegrationTest(unittest.TestCase):
         for name in ['__init__', 'get_dprime', 'get_EER', 'compute_rates']:
             self.assertEqual(old[name], new[name], name)  # verify executable homework methods are unchanged
 
-    def test_project_calls_hw3_with_full_empirical_thresholds(self):
+    def test_project_calls_hw3_with_full_empirical_thresholds(self):  # verify that project calls hw3 with full empirical thresholds
         genuine = np.array([-2.0, 0.0, 3.0, 3.0])
         impostor = np.array([-4.0, -2.0, 0.0, 1.0])
         evaluator = Evaluator(genuine, impostor)
@@ -50,11 +50,11 @@ class HW3IntegrationTest(unittest.TestCase):
         np.testing.assert_allclose(fnr, 1 - expected_tpr, rtol=0, atol=1e-12)
         self.assertEqual(result['evaluation_source'], 'hw3_submitted_evaluator_empirical_thresholds')
 
-    def test_degenerate_dprime_retains_existing_policy(self):
+    def test_degenerate_dprime_retains_existing_policy(self):  # verify that degenerate dprime retains existing policy
         self.assertIsNone(Evaluator([1, 1], [0, 0]).get_dprime())
         self.assertEqual(Evaluator([0, 0], [0, 0]).get_dprime(), 0)
 
-    def test_all_twenty_saved_conditions_remain_reproducible(self):
+    def test_all_twenty_saved_conditions_remain_reproducible(self):  # verify that all twenty saved conditions remain reproducible
         runs = [('rq1_main_verified_20261116', 'rq1_baseline_scores.csv'),
                 ('rq2_main_verified_20261116', 'rq2_fusion_scores.csv'),
                 ('rq3_main_verified_20261116', 'rq3_blur_scores.csv')]

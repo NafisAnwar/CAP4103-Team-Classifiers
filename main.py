@@ -18,7 +18,7 @@ MENU = {
 }
 
 
-def project_root(base=HERE):
+def project_root(base=HERE):  # resolve the flat development checkout or the nested submission package
     base = Path(base).resolve()
     candidate = base / 'project'  # the submission keeps implementation folders under one directory
     if (candidate / 'scripts/reproduce_full.py').is_file():
@@ -28,7 +28,7 @@ def project_root(base=HERE):
     raise FileNotFoundError('Project implementation is missing. Extract the entire submission ZIP.')
 
 
-def dependency_issues(root):
+def dependency_issues(root):  # compare installed distributions against the exact dependency lock
     problems = []
     for line in (root / 'requirements-lock.txt').read_text(encoding='utf-8').splitlines():
         if not line.strip() or line.lstrip().startswith('#'):
@@ -43,7 +43,7 @@ def dependency_issues(root):
     return problems
 
 
-def setup(root):
+def setup(root):  # prepare only an isolated python 3.13 environment before running experiments
     if sys.prefix == sys.base_prefix:
         raise RuntimeError('Use RUN_PROJECT.cmd or activate a Python 3.13 virtual environment before setup.')
     if sys.version_info[:2] != (3, 13):
@@ -58,7 +58,7 @@ def setup(root):
     print('PASS: Pinned Python environment is ready.', flush=True)
 
 
-def mode_command(mode, root, data_root):
+def mode_command(mode, root, data_root):  # translate each grader-facing option into the existing experiment command
     if mode == 'verify':
         command = ['scripts/verify_package.py']
         if (root / '.git').exists():
@@ -74,7 +74,7 @@ def mode_command(mode, root, data_root):
     raise ValueError(f'Unknown execution mode: {mode}')
 
 
-def execute(mode, root, data_root=None):
+def execute(mode, root, data_root=None):  # validate dependencies and run the chosen action without a shell
     if mode == 'setup':
         setup(root)
         return
@@ -87,7 +87,7 @@ def execute(mode, root, data_root=None):
     subprocess.run([sys.executable, '-B', *command], cwd=root, check=True)  # use the same interpreter for every experiment
 
 
-def menu(root, data_root=None):
+def menu(root, data_root=None):  # keep the interactive interface available after invalid input or a failed experiment
     while True:
         print('\nCAP4103 | TEAM CLASSIFIERS')
         print('Face and Palmprint Biometric Authentication')
@@ -109,7 +109,7 @@ def menu(root, data_root=None):
             print(f'FAILED: {error}', file=sys.stderr)
 
 
-def main(argv=None):
+def main(argv=None):  # support both interactive use and reproducible command-line execution
     parser = argparse.ArgumentParser(description='CAP4103 biometric experiment launcher')
     parser.add_argument('mode', nargs='?', choices=MODES, help='omit to open the interactive menu')
     parser.add_argument('--data-root', type=Path, help='directory containing data/raw for independent reproduction')

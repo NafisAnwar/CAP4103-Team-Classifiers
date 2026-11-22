@@ -10,19 +10,19 @@ from src.evaluation import evaluate_labeled
 from src.files import ROOT
 
 
-class FixedModel:
-    def __init__(self):
+class FixedModel:  # group the regression checks and shared test fixtures for this component
+    def __init__(self):  # support the deterministic test fixture and its assertions
         self.classes_=np.array(['a','b'])
         self.templates_=np.array([[1,0,0,0],[0,0,0,1]],dtype=float)
 
-    def fit(self,*args):
+    def fit(self,*args):  # support the deterministic test fixture and its assertions
         raise AssertionError('Blur scoring must never fit')
 
-    def score_matrix(self,images):
+    def score_matrix(self,images):  # support the deterministic test fixture and its assertions
         return images.reshape(len(images),-1)@self.templates_.T
 
 
-def fixture():
+def fixture():  # prepare an isolated fixture before running the relevant regression checks
     images={'one':np.array([[.9,.1],[.1,.2]]),'two':np.array([[.1,.2],[.3,.8]])}
     trials=[dict(trial_id=f't{i}{claim}',claimed_user_id=claim,is_genuine=int(true==claim),
                  simulated_true_user=true,face_test_sample_id=sample,palm_test_sample_id='p'+sample)
@@ -30,15 +30,15 @@ def fixture():
     return images,trials
 
 
-class BlurTest(unittest.TestCase):
-    def test_sigma_zero_is_exact_copy_with_original_dtype(self):
+class BlurTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_sigma_zero_is_exact_copy_with_original_dtype(self):  # verify that sigma zero is exact copy with original dtype
         image=fixture()[0]['one'].astype(np.float32)
         actual=blur_image(image,0)
         np.testing.assert_array_equal(image,actual)
         self.assertEqual(actual.dtype,image.dtype)
         self.assertFalse(np.shares_memory(actual,image))
 
-    def test_positive_blur_preserves_shape_range_and_input(self):
+    def test_positive_blur_preserves_shape_range_and_input(self):  # verify that positive blur preserves shape range and input
         image=fixture()[0]['one']
         before=image.copy()
         result=blur_image(image,1)
@@ -47,7 +47,7 @@ class BlurTest(unittest.TestCase):
         self.assertLess(result.std(),image.std())
         np.testing.assert_array_equal(image,before)
 
-    def test_invalid_sigmas_and_pixels_rejected(self):
+    def test_invalid_sigmas_and_pixels_rejected(self):  # verify that invalid sigmas and pixels rejected
         for sigmas in [[],[1],[0,0],[0,-1],[0,float('inf')],[0,2,1]]:
             with self.assertRaises(ValueError):
                 validate_sigmas(sigmas)
@@ -55,7 +55,7 @@ class BlurTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 blur_image(image,1)
 
-    def test_frozen_model_and_original_arrays_unchanged(self):
+    def test_frozen_model_and_original_arrays_unchanged(self):  # verify that frozen model and original arrays unchanged
         model=FixedModel()
         images,trials=fixture()
         original={k:v.copy() for k,v in images.items()}
@@ -69,7 +69,7 @@ class BlurTest(unittest.TestCase):
             np.testing.assert_array_equal(images[key],original[key])
         self.assertNotEqual(rows[0][0]['face_score_raw'],rows[1][0]['face_score_raw'])
 
-    def test_sigma_zero_fusion_and_palm_invariance(self):
+    def test_sigma_zero_fusion_and_palm_invariance(self):  # verify that sigma zero fusion and palm invariance
         images,trials=fixture()
         scores=frozen_face_scores(FixedModel(),images,trials,[0,1,2])
         palms=[dict(r,palm_score_raw=.7 if r['is_genuine'] else .2) for r in scores[0]]
@@ -86,7 +86,7 @@ class BlurTest(unittest.TestCase):
         self.assertEqual(len(set(palm_eers)),1)
         self.assertEqual(repr(norm),original_params)
 
-    def test_score_equality_checks_keys_labels_and_values(self):
+    def test_score_equality_checks_keys_labels_and_values(self):  # verify that score equality checks keys labels and values
         images,trials=fixture()
         rows=frozen_face_scores(FixedModel(),images,trials,[0])[0]
         assert_equal_scores(rows,list(reversed(rows)),['face_score_raw'])
@@ -96,7 +96,7 @@ class BlurTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             assert_equal_scores(rows,rows[:-1],['face_score_raw'])
 
-    def test_synthetic_rq3_orchestration_exports_and_checks_metrics(self):
+    def test_synthetic_rq3_orchestration_exports_and_checks_metrics(self):  # verify that synthetic rq3 orchestration exports and checks metrics
         import shutil
         from experiments.rq3_blur import run
         from src.fusion import accepted_scores
@@ -109,7 +109,7 @@ class BlurTest(unittest.TestCase):
             root=Path(folder)/'repo'
             root.mkdir()
             for name in ['src', 'data/manifests']:
-                shutil.copytree(ROOT/name, root/name, ignore=shutil.ignore_patterns('__pycache__')) #the fixture never copies environments or biometric assets
+                shutil.copytree(ROOT/name, root/name, ignore=shutil.ignore_patterns('__pycache__'))  # the fixture never copies environments or biometric assets
             from src.files import read_csv
             accepted = json.loads((ROOT/'results/metrics/rq1_accepted.json').read_text())
             parent = ROOT/'results/metrics'/rq2_id
@@ -121,7 +121,7 @@ class BlurTest(unittest.TestCase):
             for name in names:
                 target = root/name
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(ROOT/name,target) #copy only the completed artifacts required by the parent check
+                shutil.copyfile(ROOT/name,target)  # copy only the completed artifacts required by the parent check
             original=accepted_scores(root)[-1]['test']
             sweeps={sigma:[dict(r,face_score_raw=r['face_score_raw']-.2*sigma) for r in original]
                     for sigma in [0.,1.]}
@@ -142,7 +142,7 @@ class BlurTest(unittest.TestCase):
             self.assertEqual(len(rows),2*6084)
             self.assertTrue((root/'results/figures/synthetic_orchestration_only/rq3_comparison.png').exists())
 
-    def test_sigma_zero_tolerance_is_tight(self):
+    def test_sigma_zero_tolerance_is_tight(self):  # verify that sigma zero tolerance is tight
         images,trials=fixture()
         rows=frozen_face_scores(FixedModel(),images,trials,[0])[0]
         small=[dict(r,face_score_raw=r['face_score_raw']+1e-14) for r in rows]
@@ -151,7 +151,7 @@ class BlurTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             assert_equal_scores(rows,large,['face_score_raw'],atol=1e-12)
 
-    def test_actual_rq3_stops_before_outputs_when_lfs_unresolved(self):
+    def test_actual_rq3_stops_before_outputs_when_lfs_unresolved(self):  # verify that actual rq3 stops before outputs when lfs unresolved
         from src.fusion import asset_available
         from experiments.rq3_blur import run
         pointer=ROOT/'results/metrics/rq2_latest.json'

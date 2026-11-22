@@ -1,5 +1,5 @@
-"""Face-only Gaussian blur; fitted models and normalization are never updated."""
-from dataclasses import asdict
+
+from dataclasses import asdict  # face-only gaussian blur; fitted models and normalization are never updated
 import hashlib
 from pathlib import Path
 import json
@@ -19,7 +19,7 @@ MODE = 'reflect'
 TRUNCATE = 4.0
 
 
-def validate_sigmas(sigmas):
+def validate_sigmas(sigmas):  # enforce an ordered, nonnegative blur sweep with a clear-image control
     values = tuple(float(s) for s in sigmas)
     if not values or values[0] != 0 or not np.isfinite(values).all() or any(s < 0 for s in values):
         raise ValueError('Finite nonnegative sigma levels must begin with zero')
@@ -28,22 +28,22 @@ def validate_sigmas(sigmas):
     return values
 
 
-def blur_image(image, sigma):
+def blur_image(image, sigma):  # apply gaussian blur to source face pixels before feature extraction
     image = np.asarray(image)
     if image.ndim != 2 or not np.issubdtype(image.dtype, np.floating) or not np.isfinite(image).all():
         raise ValueError('Expected a finite grayscale floating-point image')
     if image.min() < 0 or image.max() > 1 or not np.isfinite(sigma) or sigma < 0:
         raise ValueError('Invalid image range or blur sigma')
-    return image.copy() if sigma == 0 else gaussian_filter(image.copy(), sigma=sigma, mode=MODE, truncate=TRUNCATE)
+    return image.copy() if sigma == 0 else gaussian_filter(image.copy(), sigma=sigma, mode=MODE, truncate=TRUNCATE)  # preserve the clear control exactly and filter a copy for positive sigma
 
 
-def frozen_face_scores(model, images, trials, sigmas):
+def frozen_face_scores(model, images, trials, sigmas):  # score each degraded probe with the same enrolled face model
     sigmas = validate_sigmas(sigmas)
-    before_model = joblib.hash(model)
-    before_images = {key: hashlib.sha256(value.tobytes()).hexdigest() for key, value in images.items()}
+    before_model = joblib.hash(model)  # record the fitted model before the blur sweep to detect any refitting
+    before_images = {key: hashlib.sha256(value.tobytes()).hexdigest() for key, value in images.items()}  # record original pixels so the sweep cannot alter the input images in place
     output = {}
     for sigma in sigmas:
-        blurred = {key: blur_image(value, sigma) for key, value in images.items()}
+        blurred = {key: blur_image(value, sigma) for key, value in images.items()}  # degrade only facial probe pixels at the current sigma
         output[sigma] = score_trials(model, blurred, trials, 'face')
     if joblib.hash(model) != before_model:
         raise ValueError('Frozen face model changed during scoring')
@@ -52,7 +52,7 @@ def frozen_face_scores(model, images, trials, sigmas):
     return output
 
 
-def assert_equal_scores(actual, expected, fields, atol=0.0):
+def assert_equal_scores(actual, expected, fields, atol=0.0):  # compare keyed biometric claims independently of their row order
     a, b = index_rows(actual, fields), index_rows(expected, fields)
     if a.keys() != b.keys():
         raise ValueError('Condition keys differ')
@@ -68,7 +68,7 @@ def assert_equal_scores(actual, expected, fields, atol=0.0):
     return maximum
 
 
-def prepare_plan(root, destination, sigmas=DEFAULT_SIGMAS):
+def prepare_plan(root, destination, sigmas=DEFAULT_SIGMAS):  # inspect only validation images to define the held-out blur conditions
     root, destination = Path(root), Path(destination)
     sigmas = validate_sigmas(sigmas)
     pointer, _, _, partitions, _, _ = accepted_scores(root)
@@ -76,11 +76,11 @@ def prepare_plan(root, destination, sigmas=DEFAULT_SIGMAS):
     images = dataset_images([r for r in partitions if r['modality'] == 'face'], 'validation', root)['face']
     if destination.exists():
         raise FileExistsError('Plan directory exists; use a fresh directory')
-    selected = sorted(images)[:4]
+    selected = sorted(images)[:4]  # select four deterministic validation samples for preview inspection
     fig, axes = plt.subplots(len(selected), len(sigmas), figsize=(2*len(sigmas),2*len(selected)), squeeze=False)
     for i, key in enumerate(selected):
         for j, sigma in enumerate(sigmas):
-            axes[i,j].imshow(blur_image(images[key],sigma),cmap='gray',vmin=0,vmax=1)
+            axes[i,j].imshow(blur_image(images[key],sigma),cmap='gray',vmin=0,vmax=1)  # render the same grayscale range for every blur level
             axes[i,j].set_title(f'{key}, sigma {sigma:g}',fontsize=9)
             axes[i,j].axis('off')
     fig.suptitle('Validation-only blur inspection; no test images')
@@ -95,13 +95,13 @@ def prepare_plan(root, destination, sigmas=DEFAULT_SIGMAS):
             'selection_split': 'validation', 'sample_ids': selected,
             'sample_pixel_sha256': {k:hashlib.sha256(images[k].tobytes()).hexdigest() for k in selected},
             'baseline_id': pointer['run_id'], 'manifest_sha256': pointer['manifest_sha256'],
-            'blur_code_sha256': sha256(root/'src/blur.py'),
+            'blur_code_sha256': sha256(root/'src/blur.py'),  # bind the inspected plan to the exact blur implementation at preparation time
             'preview_sha256': sha256(preview), 'reviewed': False, 'review_note': ''}
     write_json(destination/'blur_plan.json',plan)
     return destination/'blur_plan.json'
 
 
-def load_plan(path, root, reviewed=True):
+def load_plan(path, root, reviewed=True):  # verify the recorded validation review before allowing the test sweep
     path, root = Path(path), Path(root)
     plan = json.loads(path.read_text())
     pointer, _, _, partitions, _, _ = accepted_scores(root)

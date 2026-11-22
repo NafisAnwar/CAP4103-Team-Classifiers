@@ -1,5 +1,9 @@
 # Technical Verification
 
+## Documentation-only source revision
+
+All active Python modules, experiment runners, utilities and tests use lowercase inline comments. The historical HW3 and PPA3 sources remain unchanged. Four source files referenced by the accepted model metadata have exact pre-comment bytes archived in `docs/source_history/`. Regression tests compare their SHA-256 values with the original accepted metadata, confirm exact executable AST equivalence and require that the reviewed commented variants match their own separately recorded SHA-256 values. The source guard recognizes only the four documented old-to-new hash pairs; any subsequent byte change is rejected. Original run metadata, manifests, models and score files are not rewritten. A new image-level reproduction generates its own current source provenance and validation blur plan.
+
 ## Verification Scope
 
 The integrated implementation was verified on November 16, 2026, using the fixed dataset manifests, accepted baseline, frozen models and saved experiment artifacts.

@@ -14,38 +14,38 @@ from src.palmprint_authentication import PalmAuthenticator
 from src.trial_protocol import load_protocol
 
 
-def run(run_id=None, root=ROOT):
+def run(run_id=None, root=ROOT):  # fit and select separate face and palm authenticators before evaluating held-out probes
     root = Path(root)
     with RunArtifacts(root, run_id) as artifacts:
-        config, partitions, trials = load_protocol(root) #verify frozen bytes before reading any images
-        enrollment = dataset_images(partitions, 'enrollment', root)
-        validation = dataset_images(partitions, 'validation', root)
-        choices = {'face': [16, 32, 64], 'palm': ['hog', 'lbp']}
+        config, partitions, trials = load_protocol(root)  # verify frozen bytes before reading any images
+        enrollment = dataset_images(partitions, 'enrollment', root)  # load only enrollment images for fitting candidate authenticators
+        validation = dataset_images(partitions, 'validation', root)  # keep model selection isolated from the held-out test samples
+        choices = {'face': [16, 32, 64], 'palm': ['hog', 'lbp']}  # compare three pca dimensions and two candidate palm texture descriptors
         selection, chosen, validation_scores = [], {}, {}
         for modality in ['face', 'palm']:
             best = None
             for setting in choices[modality]:
                 model = FaceAuthenticator(setting, config['seed']) if modality == 'face' else PalmAuthenticator(setting)
-                enroll(model, enrollment, partitions, modality) #only enrollment controls learned features and templates
+                enroll(model, enrollment, partitions, modality)  # only enrollment controls learned features and templates
                 rows, evaluator = score_and_evaluate(model, validation, trials['validation'], modality)
                 metrics = evaluator.metrics()
                 selection.append({'modality': modality, 'setting': str(setting), 'validation_eer': metrics['eer'],
                                   'validation_auc': metrics['auc'], 'score_direction_check': metrics['score_direction_check']})
-                if metrics['score_direction_check'] == 'passed' and (best is None or metrics['eer'] < best):
+                if metrics['score_direction_check'] == 'passed' and (best is None or metrics['eer'] < best):  # choose the lowest validation eer among candidates with correct score orientation
                     best, chosen[modality], validation_scores[modality] = metrics['eer'], model, rows
             if modality not in chosen:
                 raise ValueError(f'No {modality} validation candidate has the expected score direction')
         write_csv(artifacts.metrics_dir / 'validation_model_selection.csv', selection)
         write_csv(artifacts.metrics_dir / 'validation_scores.csv', combine_raw_scores(validation_scores['face'], validation_scores['palm']))
-        test = dataset_images(partitions, 'test', root) #test stays unloaded until both choices are frozen
+        test = dataset_images(partitions, 'test', root)  # test stays unloaded until both choices are frozen
         results, test_scores = [], {}
         for modality in ['face', 'palm']:
             rows, evaluator = score_and_evaluate(chosen[modality], test, trials['test'], modality)
             test_scores[modality] = rows
             metrics = evaluator.export(artifacts.metrics_dir, artifacts.figures_dir, f'rq1_{modality}')
             results.append(dict(metrics, modality=modality, subjects=config['subjects'], seed=config['seed']))
-            joblib.dump(chosen[modality], artifacts.model_dir / f'{modality}.joblib')
-        write_csv(artifacts.metrics_dir / 'rq1_baseline_scores.csv', combine_raw_scores(test_scores['face'], test_scores['palm']))
+            joblib.dump(chosen[modality], artifacts.model_dir / f'{modality}.joblib')  # save the selected fitted model and enrollment identity templates
+        write_csv(artifacts.metrics_dir / 'rq1_baseline_scores.csv', combine_raw_scores(test_scores['face'], test_scores['palm']))  # publish aligned held-out individual modality scores for subsequent fusion
         write_csv(artifacts.metrics_dir / 'rq1_summary.csv', results)
         metadata = {'protocol': config,
                     'models': {modality: {'path': (artifacts.model_dir / f'{modality}.joblib').relative_to(root).as_posix(),
@@ -64,7 +64,7 @@ def run(run_id=None, root=ROOT):
             required += [artifacts.model_dir / f'{modality}.joblib', artifacts.metrics_dir / f'rq1_{modality}_metrics.json',
                          artifacts.metrics_dir / f'rq1_{modality}_rates.csv']
             required += [artifacts.figures_dir / f'rq1_{modality}_{plot}.png' for plot in ['roc', 'far_frr', 'scores']]
-        metadata = artifacts.complete(metadata, required) #incomplete runs never replace the latest pointer
+        metadata = artifacts.complete(metadata, required)  # incomplete runs never replace the latest pointer
     print(json.dumps({'run_id': metadata['run_id'], 'chosen_models': metadata['chosen_models'], 'test_metrics': results}, indent=2))
     return metadata
 

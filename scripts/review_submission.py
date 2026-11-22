@@ -1,5 +1,5 @@
-"""Audit completed RQ2/RQ3 exports and write one RQ1-RQ3 master table."""
-import argparse
+
+import argparse  # audit completed rq2/rq3 exports and write one rq1-rq3 master table
 from dataclasses import asdict
 import json
 from pathlib import Path
@@ -16,7 +16,7 @@ FIELDS=['face_score_raw','palm_score_raw','face_score_normalized','palm_score_no
 METRICS=['eer','auc','d_prime','genuine_count','impostor_count']
 
 
-def review(rq2_id,rq3_id,repeat_id,output,root=ROOT):
+def review(rq2_id,rq3_id,repeat_id,output,root=ROOT):  # audit completed score tables, frozen inputs and repeat runs across the three research questions
     root,output=Path(root),Path(output)
     if output.exists():
         raise FileExistsError('Use a fresh audit output directory')
@@ -95,7 +95,7 @@ def review(rq2_id,rq3_id,repeat_id,output,root=ROOT):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__)
+    parser=argparse.ArgumentParser(description='Audit completed RQ2/RQ3 exports and write one RQ1-RQ3 master table.')
     parser.add_argument('--rq2-run',required=True)
     parser.add_argument('--rq3-run',required=True)
     parser.add_argument('--repeat-run',required=True)

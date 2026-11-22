@@ -15,7 +15,7 @@ import tempfile
 root = Path(__file__).resolve().parents[1]
 
 
-def verify(export=False):
+def verify(export=False):  # verify the immutable ppa3 source and reproduce its original caltech results in a temporary folder
     expected_hashes = json.loads((root / 'docs/legacy_source_hashes.json').read_text())
     for name, expected in expected_hashes.items():
         actual = hashlib.sha256((root / 'ppa3_legacy' / name).read_bytes()).hexdigest()
@@ -25,14 +25,14 @@ def verify(export=False):
     with tempfile.TemporaryDirectory(prefix='cap4103_legacy_') as folder:
         temporary = Path(folder)
         for name in expected_hashes:
-            shutil.copyfile(root / 'ppa3_legacy' / name, temporary / name) #the archived originals are never executed in place
+            shutil.copyfile(root / 'ppa3_legacy' / name, temporary / name)  # the archived originals are never executed in place
         run = subprocess.run([sys.executable, '-B', str(temporary / 'main.py')],
                              cwd=temporary, env=env, capture_output=True, text=True,
                              encoding='utf-8', timeout=180, check=True)
         figures = ['roc_curve.png', 'det_curve.png', 'score_distribution_plot.png']
         if not all((temporary / 'plots' / name).is_file() for name in figures):
             raise AssertionError('Legacy figures were not generated')
-        figure_bytes = {name: (temporary / 'plots' / name).read_bytes() for name in figures} #retain evidence after the temporary run ends
+        figure_bytes = {name: (temporary / 'plots' / name).read_bytes() for name in figures}  # retain evidence after the temporary run ends
     print(run.stdout, end='')
     if run.stderr:
         print(run.stderr, file=sys.stderr, end='')
@@ -70,7 +70,7 @@ def verify(export=False):
         for name, data in figure_bytes.items():
             path = root / 'ppa3_legacy/plots' / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(data) #only the explicit export command updates saved evidence
+            path.write_bytes(data)  # only the explicit export command updates saved evidence
     print('PASS: unchanged source, sample/claim counts, metrics and three generated figures')
     return result
 

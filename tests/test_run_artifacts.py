@@ -7,8 +7,8 @@ from src.experiment_support import RunArtifacts
 from src.files import write_json, text_sha256, sha256
 
 
-class RunArtifactsTest(unittest.TestCase):
-    def setUp(self):
+class RunArtifactsTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def setUp(self):  # prepare an isolated fixture before running the relevant regression checks
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)
         self.root = Path(folder.name)
@@ -18,26 +18,26 @@ class RunArtifactsTest(unittest.TestCase):
         self.provenance = {'source_sha256': {'src/example.py': 'one'}, 'manifest_sha256': {},
                            'protocol_lock_sha256': 'lock', 'git_commit_at_run': 'commit', 'packages': {}}
 
-    def status(self, name):
+    def status(self, name):  # support the deterministic test fixture and its assertions
         return json.loads((self.root / 'results/metrics' / name / 'run_status.json').read_text())['status']
 
-    def test_exception_is_recorded_and_latest_is_unchanged(self):
+    def test_exception_is_recorded_and_latest_is_unchanged(self):  # verify that exception is recorded and latest is unchanged
         with patch('src.experiment_support.capture_provenance', return_value=self.provenance):
             with self.assertRaisesRegex(RuntimeError, 'interrupted'):
                 with RunArtifacts(self.root, 'broken') as run:
                     self.assertEqual(self.status('broken'), 'running')
-                    raise RuntimeError('interrupted') #simulate failure after output folders exist
+                    raise RuntimeError('interrupted')  # simulate failure after output folders exist
         self.assertEqual(self.status('broken'), 'failed')
         self.assertEqual(self.before, self.pointer.read_bytes())
 
-    def test_model_only_collision_is_rejected_without_other_outputs(self):
+    def test_model_only_collision_is_rejected_without_other_outputs(self):  # verify that model only collision is rejected without other outputs
         (self.root / 'data/processed/models/existing').mkdir(parents=True)
         with self.assertRaises(FileExistsError):
             with RunArtifacts(self.root, 'existing'):
                 self.fail('collision must be rejected before entering')
         self.assertFalse((self.root / 'results/metrics/existing').exists())
 
-    def test_source_changes_and_missing_artifacts_prevent_completion(self):
+    def test_source_changes_and_missing_artifacts_prevent_completion(self):  # verify that source changes and missing artifacts prevent completion
         changed = dict(self.provenance, source_sha256={'src/example.py': 'two'})
         for name, end in [('changed', changed), ('missing', self.provenance)]:
             with patch('src.experiment_support.capture_provenance', side_effect=[self.provenance, end]):
@@ -47,7 +47,7 @@ class RunArtifactsTest(unittest.TestCase):
             self.assertEqual(self.status(name), 'failed')
             self.assertEqual(self.before, self.pointer.read_bytes())
 
-    def test_completed_run_publishes_artifact_hashes_and_latest(self):
+    def test_completed_run_publishes_artifact_hashes_and_latest(self):  # verify that completed run publishes artifact hashes and latest
         with patch('src.experiment_support.capture_provenance', return_value=self.provenance):
             with RunArtifacts(self.root, 'good') as run:
                 artifact = run.metrics_dir / 'scores.csv'
@@ -57,7 +57,7 @@ class RunArtifactsTest(unittest.TestCase):
         self.assertEqual(json.loads(self.pointer.read_text())['run_id'], 'good')
         self.assertIn('results/metrics/good/scores.csv', metadata['artifact_sha256'])
 
-    def test_atomic_json_failure_preserves_existing_file_and_cleans_temporary(self):
+    def test_atomic_json_failure_preserves_existing_file_and_cleans_temporary(self):  # verify that atomic json failure preserves existing file and cleans temporary
         before_files = set(self.pointer.parent.iterdir())
         with patch('src.files.os.replace', side_effect=OSError('simulated disk error')):
             with self.assertRaises(OSError):
@@ -65,8 +65,8 @@ class RunArtifactsTest(unittest.TestCase):
         self.assertEqual(self.before, self.pointer.read_bytes())
         self.assertEqual(before_files, set(self.pointer.parent.iterdir()))
 
-    def test_pointer_publication_failure_marks_metadata_failed(self):
-        def write_or_fail(path, value):
+    def test_pointer_publication_failure_marks_metadata_failed(self):  # verify that pointer publication failure marks metadata failed
+        def write_or_fail(path, value):  # support the deterministic test fixture and its assertions
             if path == self.pointer:
                 raise OSError('pointer publication failed')
             write_json(path, value)
@@ -82,7 +82,7 @@ class RunArtifactsTest(unittest.TestCase):
         self.assertEqual(saved['status'], 'failed')
         self.assertEqual(self.before, self.pointer.read_bytes())
 
-    def test_text_hash_allows_only_line_ending_changes(self):
+    def test_text_hash_allows_only_line_ending_changes(self):  # verify that text hash allows only line ending changes
         path = self.root / 'scores.csv'
         path.write_bytes(b'score\r\n0.5\r\n')
         expected, raw = text_sha256(path), sha256(path)

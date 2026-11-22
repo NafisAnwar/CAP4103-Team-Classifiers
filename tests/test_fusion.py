@@ -13,7 +13,7 @@ from src.fusion_reporting import verify_metrics
 from src.evaluation import evaluate_labeled
 
 
-def fixtures(prefix='validation'):
+def fixtures(prefix='validation'):  # prepare an isolated fixture before running the relevant regression checks
     trials = [{'trial_id':f'{prefix}-{i}', 'claimed_user_id':f'u{i%2}', 'is_genuine':i%2}
               for i in range(4)]
     rows = [dict(r, face_score_raw=s, palm_score_raw=p) for r,s,p in
@@ -21,13 +21,13 @@ def fixtures(prefix='validation'):
     return trials,rows
 
 
-def normalizer():
+def normalizer():  # support the deterministic test fixture and its assertions
     trials,rows=fixtures()
     return Normalizer.fit(rows,trials,split='validation',validation_sha256='fixture',baseline_id='fixture')
 
 
-class FusionTest(unittest.TestCase):
-    def test_population_zscore_and_no_test_clipping(self):
+class FusionTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_population_zscore_and_no_test_clipping(self):  # verify that population zscore and no test clipping
         norm=normalizer()
         _,rows=fixtures()
         for m in ['face','palm']:
@@ -35,7 +35,7 @@ class FusionTest(unittest.TestCase):
             np.testing.assert_allclose(norm.transform(raw,m),(raw-raw.mean())/raw.std(ddof=0))
             self.assertGreater(norm.transform([10],m)[0],1)
 
-    def test_test_split_and_test_keys_cannot_fit(self):
+    def test_test_split_and_test_keys_cannot_fit(self):  # verify that test split and test keys cannot fit
         trials,rows=fixtures()
         with self.assertRaisesRegex(ValueError,'validation'):
             Normalizer.fit(rows,trials,split='test',validation_sha256='x',baseline_id='x')
@@ -44,7 +44,7 @@ class FusionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'split'):
             Normalizer.fit(fixtures('test')[1],trials,split='validation',validation_sha256='x',baseline_id='x')
 
-    def test_fit_is_frozen_and_round_trips(self):
+    def test_fit_is_frozen_and_round_trips(self):  # verify that fit is frozen and round trips
         norm=normalizer()
         with self.assertRaises(FrozenInstanceError):
             norm.face_mean=5
@@ -55,7 +55,7 @@ class FusionTest(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 norm.save(path,{})
 
-    def test_nonfinite_or_constant_parameters_fail(self):
+    def test_nonfinite_or_constant_parameters_fail(self):  # verify that nonfinite or constant parameters fail
         values=asdict(normalizer())
         for field,value in [('face_std',0),('palm_std',1e-14),('face_mean',float('nan'))]:
             with self.assertRaises(ValueError):
@@ -63,7 +63,7 @@ class FusionTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             normalizer().transform([float('inf')],'face')
 
-    def test_keyed_join_equal_weights_and_raw_preservation(self):
+    def test_keyed_join_equal_weights_and_raw_preservation(self):  # verify that keyed join equal weights and raw preservation
         trials,rows=fixtures()
         norm=normalizer()
         fused=fuse_scores(rows,list(reversed(rows)),norm,trials)
@@ -72,7 +72,7 @@ class FusionTest(unittest.TestCase):
         for r in fused:
             self.assertEqual(r['fusion_score'],.5*r['face_score_normalized']+.5*r['palm_score_normalized'])
 
-    def test_join_rejects_missing_duplicate_wrong_labels_and_nonfinite(self):
+    def test_join_rejects_missing_duplicate_wrong_labels_and_nonfinite(self):  # verify that join rejects missing duplicate wrong labels and nonfinite
         trials,rows=fixtures()
         variants=[rows[:-1],rows+[rows[0]], [dict(rows[0],is_genuine=1)]+rows[1:],
                   [dict(rows[0],palm_score_raw=float('nan'))]+rows[1:]]
@@ -80,14 +80,14 @@ class FusionTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 fuse_scores(rows,bad,normalizer(),trials)
 
-    def test_coverage_rejects_matching_but_wrong_subset(self):
+    def test_coverage_rejects_matching_but_wrong_subset(self):  # verify that coverage rejects matching but wrong subset
         trials,rows=fixtures()
         with self.assertRaises(ValueError):
             fuse_scores(rows[:-1],rows[:-1],normalizer(),trials)
         with self.assertRaises(ValueError):
             validate_coverage([dict(rows[0],is_genuine=.5)]+rows[1:],trials)
 
-    def test_lfs_pointers_are_not_model_or_image_assets(self):
+    def test_lfs_pointers_are_not_model_or_image_assets(self):  # verify that lfs pointers are not model or image assets
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'face.joblib'
             self.assertFalse(asset_available(path))
@@ -98,7 +98,7 @@ class FusionTest(unittest.TestCase):
             path.write_bytes(b'actual bytes')
             self.assertTrue(asset_available(path))
 
-    def test_accepted_score_counts_and_validation_parameters(self):
+    def test_accepted_score_counts_and_validation_parameters(self):  # verify that accepted score counts and validation parameters
         pointer,_,_,_,trials,tables=accepted_scores()
         self.assertEqual(len(tables['validation']),3042)
         self.assertEqual(len(tables['test']),6084)
@@ -108,7 +108,7 @@ class FusionTest(unittest.TestCase):
         self.assertEqual(norm.validation_count,3042)
         self.assertEqual(norm.face_mean,np.mean([r['face_score_raw'] for r in tables['validation']]))
 
-    def test_exported_rq2_metrics_recompute_when_run_exists(self):
+    def test_exported_rq2_metrics_recompute_when_run_exists(self):  # verify that exported rq2 metrics recompute when run exists
         pointer=ROOT/'results/metrics/rq2_latest.json'
         if not pointer.exists():
             self.skipTest('Run RQ2 to verify exported real scores')
@@ -123,7 +123,7 @@ class FusionTest(unittest.TestCase):
             for field in ['face_score_raw','palm_score_raw','face_score_normalized','palm_score_normalized','fusion_score']:
                 self.assertEqual(float(actual[field]),wanted[field])
 
-    def test_rq2_pointer_does_not_change_rq1(self):
+    def test_rq2_pointer_does_not_change_rq1(self):  # verify that rq2 pointer does not change rq1
         provenance={'source_sha256':{},'manifest_sha256':{},'protocol_lock_sha256':'x',
                     'git_commit_at_run':None,'packages':{}}
         with tempfile.TemporaryDirectory() as folder:

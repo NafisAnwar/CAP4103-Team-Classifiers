@@ -10,23 +10,23 @@ from src.fusion import accepted_scores, Normalizer, fuse_scores, RQ2_FIELDS
 from src.fusion_reporting import evaluate_conditions, verify_metrics, rq2_comparison
 
 
-def run(run_id=None, root=ROOT):
+def run(run_id=None, root=ROOT):  # fit normalization using accepted validation scores and evaluate equal-weight fusion on test claims
     root = Path(root)
-    pointer, baseline, config, partitions, trials, tables = accepted_scores(root)
+    pointer, baseline, config, partitions, trials, tables = accepted_scores(root)  # recover the accepted baseline and its exact validation and test claims
     validation_hash = pointer['score_sha256']['validation_scores.csv']
-    normalizer = Normalizer.fit(tables['validation'], trials['validation'], split='validation',
+    normalizer = Normalizer.fit(tables['validation'], trials['validation'], split='validation',  # learn normalization exclusively from validated rq1 development scores
                                 validation_sha256=validation_hash, baseline_id=pointer['run_id'])
     with RunArtifacts(root, run_id or 'rq2_' + uuid.uuid4().hex[:12], latest_name='rq2_latest.json') as artifacts:
         normalizer_path = artifacts.metrics_dir / 'normalizer.json'
         normalizer.save(normalizer_path, dict(artifacts.provenance, baseline_id=pointer['run_id'],
                                             input_score_sha256=pointer['score_sha256']))
         normalizer = Normalizer.load(normalizer_path)
-        rows = fuse_scores(tables['test'], tables['test'], normalizer, trials['test'])
+        rows = fuse_scores(tables['test'], tables['test'], normalizer, trials['test'])  # combine held-out face and palm scores with the frozen equal-weight rule
         scores_path = artifacts.metrics_dir / 'rq2_fusion_scores.csv'
         write_csv(scores_path, rows, RQ2_FIELDS)
         rows = read_csv(scores_path)
         summary = evaluate_conditions(rows, artifacts, 'rq2_clear', 0.0)
-        verify_metrics(rows, summary)
+        verify_metrics(rows, summary)  # check the exported metrics against the stored trial scores
         for saved in baseline['test_metrics']:
             calculated = next(r for r in summary if r['modality'] == saved['modality'])
             for field in ['eer', 'auc', 'd_prime']:
@@ -34,7 +34,7 @@ def run(run_id=None, root=ROOT):
                     raise ValueError('Recomputed RQ1 metrics differ from accepted values')
         write_csv(artifacts.metrics_dir / 'master_metrics.csv', summary)
         rq2_comparison(summary, artifacts.figures_dir / 'rq2_comparison.png')
-        current = accepted_scores(root)[0]
+        current = accepted_scores(root)[0]  # ensure the baseline pointer was not replaced while fusion executed
         if current != pointer:
             raise ValueError('Baseline reference changed during run')
         required = sorted(artifacts.metrics_dir.glob('*.csv')) + [normalizer_path]

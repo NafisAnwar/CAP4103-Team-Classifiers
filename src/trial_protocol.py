@@ -5,7 +5,7 @@ import numpy as np
 from src.files import ROOT, read_csv, write_csv, write_json, guard_manifest_rebuild, manifest_hashes, verify_manifest_hashes
 
 
-def validate_partitions(rows):
+def validate_partitions(rows):  # reject samples or duplicate decoded pixels shared by distinct data partitions
     if not rows:
         raise ValueError('No partition rows')
     samples, pixels, users = set(), set(), set()
@@ -14,9 +14,9 @@ def validate_partitions(rows):
             raise ValueError('Unknown modality or missing image hash')
         if row['modality'] == 'palm' and (row['palm_hand_if_applicable'] != 'R' or row['session_if_available'] != ('S' if row['split'] == 'test' else 'F')):
             raise ValueError('Palm hand or session conflicts with the fixed protocol')
-        key = row['modality'], row['original_sample_id'] #one sample can belong to only one partition
-        digest = row['modality'], row['pixel_sha256'] #renaming a copied image must not hide leakage
-        if key in samples or digest in pixels:
+        key = row['modality'], row['original_sample_id']  # one sample can belong to only one partition
+        digest = row['modality'], row['pixel_sha256']  # renaming a copied image must not hide leakage
+        if key in samples or digest in pixels:  # block leakage through repeated sample ids or renamed duplicate images
             raise ValueError('Repeated sample or decoded image pixels across partitions')
         if row['split'] not in ['enrollment', 'validation', 'test']:
             raise ValueError('Unknown split')
@@ -36,7 +36,7 @@ def validate_partitions(rows):
             originals.update(subjects)
 
 
-def make_trials(partitions, split):
+def make_trials(partitions, split):  # pair probes by simulated identity and generate every claimed-user comparison
     if split not in ['validation', 'test']:
         raise ValueError('Claims may use validation or test probes only')
     validate_partitions(partitions)
@@ -52,7 +52,7 @@ def make_trials(partitions, split):
         if not probes['face'] or len(probes['face']) != len(probes['palm']):
             raise ValueError('Both modalities need the same nonzero probe count')
         for index, (face, palm) in enumerate(zip(probes['face'], probes['palm'])):
-            for claim in users:
+            for claim in users:  # produce one genuine comparison and all remaining impostor comparisons per probe
                 trials.append({'trial_id': f'{split}-{user}-p{index:02d}-{claim}',
                                'simulated_true_user': user, 'face_test_sample_id': face,
                                'palm_test_sample_id': palm, 'claimed_user_id': claim,
@@ -60,18 +60,18 @@ def make_trials(partitions, split):
     return trials
 
 
-def validate_trials(trials, partitions, split):
-    expected = make_trials(partitions, split) #compare against every genuine and impostor claim
+def validate_trials(trials, partitions, split):  # require exactly the expected genuine and impostor claim set
+    expected = make_trials(partitions, split)  # compare against every genuine and impostor claim
     fields = list(expected[0])
     key = lambda row: tuple(str(row[field]) for field in fields)
     if len(trials) != len(expected) or {key(row) for row in trials} != {key(row) for row in expected}:
         raise ValueError('Trial manifest has duplicate, missing, relabeled or wrong-split claims')
 
 
-def load_protocol(root=ROOT):
+def load_protocol(root=ROOT):  # verify the manifest lock, identity mapping, partitions and claim counts
     manifest = Path(root) / 'data/manifests'
     lock = json.loads((manifest / 'protocol_lock.json').read_text(encoding='utf-8'))
-    verify_manifest_hashes(lock['manifest_sha256'], root) #check bytes before trusting labels or trial counts
+    verify_manifest_hashes(lock['manifest_sha256'], root)  # check bytes before trusting labels or trial counts
     config = json.loads((manifest / 'config.json').read_text())
     partitions = read_csv(manifest / 'partitions.csv')
     validate_partitions(partitions)
@@ -99,7 +99,7 @@ def load_protocol(root=ROOT):
     return config, partitions, trials
 
 
-def build_protocol(root=ROOT, seed=42, max_users=40, rebuild=False):
+def build_protocol(root=ROOT, seed=42, max_users=40, rebuild=False):  # construct the deterministic 4/2/4 enrollment, validation and test manifest
     root = Path(root)
     guard_manifest_rebuild(root, ['identity_mapping.csv', 'validation_trials.csv', 'test_trials.csv'], rebuild)
     face_rows = [row for row in read_csv(root / 'data/manifests/face_samples.csv') if row['status'] == 'usable']
@@ -109,24 +109,24 @@ def build_protocol(root=ROOT, seed=42, max_users=40, rebuild=False):
     palm_users = sorted({row['subject_id'] for row in palm_rows})
     palm_users = [user for user in palm_users if all(sum(row['subject_id'] == user and row['session'] == session for row in palm_rows) >= count
                                                   for session, count in [('F', 6), ('S', 4)])]
-    count = min(len(face_users), len(palm_users), max_users)
+    count = min(len(face_users), len(palm_users), max_users)  # use only subjects eligible in both datasets
     if count < 2:
         raise ValueError('Insufficient eligible subjects for the predeclared 4/2/4 session-aware protocol')
-    rng = np.random.default_rng(seed) #keep identity mapping and sample selection reproducible
+    rng = np.random.default_rng(seed)  # keep identity mapping and sample selection reproducible
     face_users = rng.permutation(face_users)[:count]
     palm_users = rng.permutation(palm_users)[:count]
     mapping, partitions = [], []
     for index, (face_id, palm_id) in enumerate(zip(face_users, palm_users)):
         user = f'user_{index:03d}'
-        mapping.append({'simulated_user_id': user, 'face_subject_id': str(face_id), 'palm_subject_id': str(palm_id)})
+        mapping.append({'simulated_user_id': user, 'face_subject_id': str(face_id), 'palm_subject_id': str(palm_id)})  # assign a common simulated identity to distinct physical subjects
         selected_faces = [row for row in face_rows if row['subject_id'] == face_id]
         selected_faces = [selected_faces[i] for i in rng.permutation(len(selected_faces))[:10]]
         pools = {session: [row for row in palm_rows if row['subject_id'] == palm_id and row['session'] == session] for session in ['F', 'S']}
-        first = [pools['F'][i] for i in rng.permutation(len(pools['F']))[:6]]
-        second = [pools['S'][i] for i in rng.permutation(len(pools['S']))[:4]] #the second session is held out for testing
+        first = [pools['F'][i] for i in rng.permutation(len(pools['F']))[:6]]  # reserve six first-session palms for enrollment and validation
+        second = [pools['S'][i] for i in rng.permutation(len(pools['S']))[:4]]  # the second session is held out for testing
         for modality, samples in [('face', selected_faces), ('palm', first + second)]:
             for sample_index, row in enumerate(samples):
-                split = 'enrollment' if sample_index < 4 else 'validation' if sample_index < 6 else 'test'
+                split = 'enrollment' if sample_index < 4 else 'validation' if sample_index < 6 else 'test'  # assign the first four samples to enrollment, the next two to validation and the final four to test
                 partitions.append({'modality': modality, 'simulated_user_id': user,
                                    'original_subject_id': row['subject_id'], 'original_sample_id': row['sample_id'],
                                    'palm_hand_if_applicable': row.get('hand', ''),
@@ -147,6 +147,6 @@ def build_protocol(root=ROOT, seed=42, max_users=40, rebuild=False):
               'enrollment_fit_only': True, 'normalization_fit_split': 'validation',
               'trial_counts': {split: len(make_trials(partitions, split)) for split in ['validation', 'test']}}
     write_json(manifest / 'config.json', config)
-    write_json(manifest / 'protocol_lock.json', {'schema_version': 1, 'hash_format': 'sha256_text_lf_binary_raw_v1',
-                                               'manifest_sha256': manifest_hashes(root)}) #freeze this complete study bundle
+    write_json(manifest / 'protocol_lock.json', {'schema_version': 1, 'hash_format': 'sha256_text_lf_binary_raw_v1',  # freeze the manifest bundle before experiments are run
+                                               'manifest_sha256': manifest_hashes(root)})  # freeze this complete study bundle
     return config

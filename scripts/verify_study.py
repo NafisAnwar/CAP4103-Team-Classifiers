@@ -1,6 +1,6 @@
-# unified verification workflow for the three research questions
 
-from pathlib import Path
+
+from pathlib import Path  # unified verification workflow for the three research questions
 import json
 import subprocess
 import sys
@@ -20,7 +20,7 @@ rq3_run = 'rq3_main_verified_20261116'
 rq3_repeat = 'rq3_main_repeat_20261116'
 
 
-def run_python(arguments):
+def run_python(arguments):  # invoke the project verification tools with the current python interpreter
     subprocess.run(
         [sys.executable, '-B', *arguments],
         cwd=root,
@@ -28,7 +28,7 @@ def run_python(arguments):
     )
 
 
-def verify_rq1():
+def verify_rq1():  # check the accepted baseline and independent reproduction evidence
     pointer, _, _, _, _, _ = accepted_scores(root)
 
     folder = root / 'results' / 'metrics' / rq1_run
@@ -58,7 +58,7 @@ def verify_rq1():
     print('PASS: RQ1 validation and test scores match the accepted baseline')
 
 
-def verify_palm_files():
+def verify_palm_files():  # confirm the downloaded right-palm files match all audited hashes
     manifest = root / 'data' / 'manifests' / 'palm_samples.csv'
     samples = read_csv(manifest)
 
@@ -79,7 +79,7 @@ def verify_palm_files():
     print(f'PASS: all {len(samples)} raw palmprint file hashes')
 
 
-def main():
+def main():  # run every required study verification gate without changing the original results
     output = Path(tempfile.mkdtemp(prefix='cap4103_study_verification_'))
 
     print('\nCAP4103 Study Verification', flush=True)
@@ -98,7 +98,7 @@ def main():
         "suite = unittest.defaultTestLoader.discover('tests'); "
         "result = unittest.TextTestRunner(verbosity=2).run(suite); "
         "sys.exit(0 if result.wasSuccessful() "
-        "and result.testsRun == 66 and not result.skipped else 1)"
+        "and result.testsRun == 69 and not result.skipped else 1)"
     )
 
     run_python(['-c', test_command])

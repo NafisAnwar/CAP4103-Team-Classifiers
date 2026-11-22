@@ -16,7 +16,7 @@ REF = 'mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd'
 NAME = re.compile(r'(?P<subject>\d{3})_(?P<session>[FS])_(?P<hand>[LR])_(?P<number>\d+)\.JPG', re.I)
 
 
-def fetch_range(url, start, end):
+def fetch_range(url, start, end):  # retrieve a specific archive byte range with bounded retries and length checks
     for attempt in range(3):
         try:
             with urlopen(Request(url, headers={'Range': f'bytes={start}-{end}'}), timeout=90) as response:
@@ -32,23 +32,23 @@ def fetch_range(url, start, end):
             time.sleep(attempt + 1)
 
 
-class RemoteArchive(io.RawIOBase):
-    def __init__(self, url, size):
+class RemoteArchive(io.RawIOBase):  # expose a remote zip as a seekable stream without downloading unrelated images
+    def __init__(self, url, size):  # track the archive endpoint, byte length and current read position
         self.url, self.size, self.pos = url, size, 0
 
-    def seekable(self):
+    def seekable(self):  # advertise random access for the zip reader
         return True
 
-    def seek(self, offset, whence=0):
+    def seek(self, offset, whence=0):  # translate zip offsets to positions in the remote archive
         self.pos = offset if whence == 0 else self.pos + offset if whence == 1 else self.size + offset
         if self.pos < 0:
             raise ValueError('Negative seek')
         return self.pos
 
-    def tell(self):
+    def tell(self):  # return the current byte position
         return self.pos
 
-    def read(self, count=-1):
+    def read(self, count=-1):  # retrieve only the requested bytes and advance the stream position
         count = min(self.size - self.pos, count if count >= 0 else self.size)
         if count <= 0:
             return b''
@@ -57,7 +57,7 @@ class RemoteArchive(io.RawIOBase):
         return data
 
 
-def extract_member(block, base_offset, info):
+def extract_member(block, base_offset, info):  # decode the selected zip member and verify its declared size and crc
     offset = info.header_offset - base_offset
     if block[offset:offset + 4] != b'PK\x03\x04':
         raise ValueError('Invalid local zip header')
@@ -75,7 +75,7 @@ def extract_member(block, base_offset, info):
     return data
 
 
-def download_bmpd(workers=4):
+def download_bmpd(workers=4):  # retrieve right-palm captures and verify their archive entries
     destination = ROOT / 'data/raw/palm'
     destination.mkdir(parents=True, exist_ok=True)
     with urlopen(BMPD + 'view/' + REF, timeout=40) as response:
@@ -96,7 +96,7 @@ def download_bmpd(workers=4):
         if match and match['hand'].upper() == 'R':
             groups.setdefault((match['subject'], match['session']), []).append((index, info))
 
-    def download_group(items):
+    def download_group(items):  # download and validate one subject-session group, reusing intact local files
         paths = [(destination / 'images' / Path(info.filename).name, info) for _, info in items]
         if all(path.exists() and path.stat().st_size == info.file_size and zlib.crc32(path.read_bytes()) == info.CRC for path, info in paths):
             return len(paths)
@@ -119,7 +119,7 @@ def download_bmpd(workers=4):
     print(f'Archive entries: {len(entries)}; right-palm images: {completed}; license metadata: {metadata.get("licenseName")}', flush=True)
 
 
-def download_faces():
+def download_faces():  # retrieve the canonical unshuffled olivetti dataset and save normalized arrays
     import numpy as np
     from sklearn.datasets import fetch_olivetti_faces
     destination = ROOT / 'data/raw/face'

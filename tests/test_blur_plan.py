@@ -9,8 +9,8 @@ from src.blur import prepare_plan, load_plan
 from src.files import write_json
 
 
-class BlurPlanTest(unittest.TestCase):
-    def test_only_validation_is_used_and_review_and_hashes_are_required(self):
+class BlurPlanTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_only_validation_is_used_and_review_and_hashes_are_required(self):  # verify that only validation is used and review and hashes are required
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)
             (root/'src').mkdir()

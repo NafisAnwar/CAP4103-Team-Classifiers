@@ -1,5 +1,5 @@
-"""One evaluation convention for all three study conditions."""
-import numpy as np
+
+import numpy as np  # one evaluation convention for all three study conditions
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -7,7 +7,7 @@ from src.evaluation import evaluate_labeled
 from src.files import write_csv
 
 
-def evaluate_conditions(rows, artifacts, condition, sigma):
+def evaluate_conditions(rows, artifacts, condition, sigma):  # evaluate face, palm and fusion using the same metric convention for each condition
     output = []
     for modality in ['face', 'palm', 'fusion']:
         field = 'fusion_score' if modality == 'fusion' else modality + '_score_raw'
@@ -20,9 +20,9 @@ def evaluate_conditions(rows, artifacts, condition, sigma):
     return output
 
 
-def verify_metrics(rows, summary):
+def verify_metrics(rows, summary):  # recompute saved metrics from the underlying claim scores
     if len(summary) != 3 or {record['modality'] for record in summary} != {'face', 'palm', 'fusion'}:
-        raise ValueError('Summary must contain each modality exactly once') #an incomplete table must not pass an audit
+        raise ValueError('Summary must contain each modality exactly once')  # an incomplete table must not pass an audit
     for record in summary:
         m = record['modality']
         field = 'fusion_score' if m == 'fusion' else m + '_score_raw'
@@ -35,7 +35,7 @@ def verify_metrics(rows, summary):
                 raise ValueError('Exported metrics disagree')
 
 
-def comparison_plot(summary, path, title):
+def comparison_plot(summary, path, title):  # compare how each modality changes over increasing face blur
     fig, axes = plt.subplots(1, 3, figsize=(12, 3.6))
     for ax, field, label in zip(axes, ['eer', 'auc', 'd_prime'], ['EER (%)', 'ROC AUC', "d-prime"]):
         for modality in ['face', 'palm', 'fusion']:
@@ -52,7 +52,7 @@ def comparison_plot(summary, path, title):
     plt.close(fig)
 
 
-def rq2_comparison(summary, path):
+def rq2_comparison(summary, path):  # compare clear-condition error rates and separation across the three systems
     fig, axes = plt.subplots(1, 3, figsize=(11, 3.6))
     labels = [r['modality'].capitalize() for r in summary]
     for ax, field, label in zip(axes, ['eer','auc','d_prime'], ['EER (%)','ROC AUC','d-prime']):

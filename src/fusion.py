@@ -1,10 +1,10 @@
-"""Validation-only, persistent z-score normalization and keyed equal-weight fusion."""
-from dataclasses import dataclass, asdict
+
+from dataclasses import dataclass, asdict  # validation-only, persistent z-score normalization and keyed equal-weight fusion
 from pathlib import Path
 import json
 import re
 import numpy as np
-from src.files import ROOT, read_csv, write_json, text_sha256, sha256, verify_manifest_hashes
+from src.files import ROOT, read_csv, write_json, text_sha256, sha256, verify_manifest_hashes, source_hash_matches
 from src.trial_protocol import load_protocol
 
 VERSION = 'validation_all_claims_zscore_v1'
@@ -14,7 +14,7 @@ RQ2_FIELDS = ['trial_id', 'claimed_user_id', 'is_genuine', 'face_score_raw', 'pa
 RQ3_FIELDS = ['blur_sigma'] + RQ2_FIELDS[:-1]
 
 
-def asset_available(path):
+def asset_available(path):  # distinguish actual local image or model bytes from unresolved git lfs pointers
     path = Path(path)
     if not path.is_file():
         return False
@@ -22,7 +22,7 @@ def asset_available(path):
         return not stream.read(128).startswith(b'version https://git-lfs.github.com/spec/v1')
 
 
-def require_assets(paths):
+def require_assets(paths):  # fail before experimentation when any required biometric asset is unavailable
     missing = [str(p) for p in paths if not asset_available(p)]
     if missing:
         raise FileNotFoundError('Actual data/model bytes are missing or are Git LFS pointers. '
@@ -30,7 +30,7 @@ def require_assets(paths):
                                 'First unavailable paths: ' + ', '.join(missing[:3]))
 
 
-def index_rows(rows, score_fields=()):
+def index_rows(rows, score_fields=()):  # index each claim by trial and claimed user while rejecting duplicate or invalid scores
     index = {}
     for original in rows:
         row = dict(original)
@@ -50,7 +50,7 @@ def index_rows(rows, score_fields=()):
     return index
 
 
-def validate_coverage(rows, trials, fields=('face_score_raw', 'palm_score_raw')):
+def validate_coverage(rows, trials, fields=('face_score_raw', 'palm_score_raw')):  # require an exact match between generated scores and the frozen claim manifest
     actual, expected = index_rows(rows, fields), index_rows(trials)
     if actual.keys() != expected.keys():
         raise ValueError('Score keys do not exactly cover the requested split')
@@ -60,7 +60,7 @@ def validate_coverage(rows, trials, fields=('face_score_raw', 'palm_score_raw'))
     return [actual[key] for key in sorted(actual)]
 
 
-def accepted_scores(root=ROOT):
+def accepted_scores(root=ROOT):  # load the accepted rq1 scores only after verifying their protocol and provenance
     root = Path(root)
     pointer = json.loads((root / 'results/metrics/rq1_accepted.json').read_text())
     metadata_path = root / pointer['metadata']
@@ -75,7 +75,7 @@ def accepted_scores(root=ROOT):
         raise ValueError('Accepted protocol differs')
     for name in ['src/preprocessing.py', 'src/face_authentication.py',
                  'src/palmprint_authentication.py', 'src/matching.py']:
-        if sha256(root / name) != metadata['source_sha256'][name]:
+        if not source_hash_matches(root, name, metadata['source_sha256'][name]):  # recognize only exact audited documentation-only source revisions
             raise ValueError('Accepted feature or matching implementation changed')
     tables = {}
     for split, name in [('validation', 'validation_scores.csv'), ('test', 'rq1_baseline_scores.csv')]:
@@ -87,7 +87,7 @@ def accepted_scores(root=ROOT):
 
 
 @dataclass(frozen=True)
-class Normalizer:
+class Normalizer:  # freeze separate face and palm population statistics fitted on validation claims
     face_mean: float
     face_std: float
     palm_mean: float
@@ -97,7 +97,7 @@ class Normalizer:
     validation_count: int
     normalization_version: str = VERSION
 
-    def __post_init__(self):
+    def __post_init__(self):  # reject unusable variances, unknown normalization rules or invalid sample counts
         values = [self.face_mean, self.face_std, self.palm_mean, self.palm_std]
         if not np.isfinite(values).all() or min(self.face_std, self.palm_std) <= 1e-12:
             raise ValueError('Nonfinite or constant/near-constant validation scores')
@@ -105,27 +105,27 @@ class Normalizer:
             raise ValueError('Unknown normalization version or invalid sample count')
 
     @classmethod
-    def fit(cls, rows, validation_trials, *, split, validation_sha256, baseline_id):
+    def fit(cls, rows, validation_trials, *, split, validation_sha256, baseline_id):  # estimate modality-specific means and standard deviations without using held-out test claims
         if split != 'validation' or any(not r['trial_id'].startswith('validation-') for r in validation_trials):
             raise ValueError('Normalizer fitting is restricted to validation')
         rows = validate_coverage(rows, validation_trials)
-        values = {m: np.array([r[m + '_score_raw'] for r in rows]) for m in ['face', 'palm']}
+        values = {m: np.array([r[m + '_score_raw'] for r in rows]) for m in ['face', 'palm']}  # use all validated claims to fit separate modality statistics
         return cls(float(values['face'].mean()), float(values['face'].std(ddof=0)),
                    float(values['palm'].mean()), float(values['palm'].std(ddof=0)),
                    validation_sha256, baseline_id, len(rows))
 
-    def transform(self, values, modality):
+    def transform(self, values, modality):  # apply frozen z-score normalization without clipping the resulting score range
         if modality not in ['face', 'palm']:
             raise ValueError('Unknown modality')
         values = np.asarray(values, dtype=float)
         if not np.isfinite(values).all():
             raise ValueError('Nonfinite scores')
-        result = (values - getattr(self, modality + '_mean')) / getattr(self, modality + '_std')
+        result = (values - getattr(self, modality + '_mean')) / getattr(self, modality + '_std')  # center and scale using only the frozen validation mean and population deviation
         if not np.isfinite(result).all():
             raise ValueError('Nonfinite normalized scores')
         return result
 
-    def save(self, path, provenance):
+    def save(self, path, provenance):  # persist the learned normalization parameters without silently replacing them
         path = Path(path)
         if path.exists():
             raise FileExistsError('Normalizer already exists; do not overwrite frozen parameters')
@@ -135,31 +135,31 @@ class Normalizer:
                           'clipping': 'none; unbounded higher-is-better scores'})
 
     @classmethod
-    def load(cls, path):
+    def load(cls, path):  # restore the exact fitted normalization parameters for later experiments
         return cls(**json.loads(Path(path).read_text())['parameters'])
 
 
-def fuse_scores(face_rows, palm_rows, normalizer, trials):
-    faces = index_rows(face_rows, ['face_score_raw'])
+def fuse_scores(face_rows, palm_rows, normalizer, trials):  # align corresponding claims and combine equally weighted normalized modality scores
+    faces = index_rows(face_rows, ['face_score_raw'])  # align face predictions by trial and claimed identity instead of file order
     palms = index_rows(palm_rows, ['palm_score_raw'])
-    if faces.keys() != palms.keys():
+    if faces.keys() != palms.keys():  # prevent missing or mismatched cross-modal claims
         raise ValueError('Modality keys differ')
     rows = []
     for key in sorted(faces):
         a, b = faces[key], palms[key]
         if a['is_genuine'] != b['is_genuine']:
             raise ValueError('Modality labels differ')
-        face = float(normalizer.transform(a['face_score_raw'], 'face'))
-        palm = float(normalizer.transform(b['palm_score_raw'], 'palm'))
+        face = float(normalizer.transform(a['face_score_raw'], 'face'))  # convert the raw face cosine score into the validation-normalized scale
+        palm = float(normalizer.transform(b['palm_score_raw'], 'palm'))  # apply the separate frozen palm normalization parameters
         rows.append({'trial_id': key[0], 'claimed_user_id': key[1], 'is_genuine': a['is_genuine'],
                      'face_score_raw': a['face_score_raw'], 'palm_score_raw': b['palm_score_raw'],
                      'face_score_normalized': face, 'palm_score_normalized': palm,
-                     'fusion_score': 0.5 * face + 0.5 * palm,
+                     'fusion_score': 0.5 * face + 0.5 * palm,  # apply the fixed equal-weight score-level fusion rule
                      'normalization_version': normalizer.normalization_version})
     return validate_coverage(rows, trials, RQ2_FIELDS[3:-1])
 
 
-def completed_run(root, run_id, experiment):
+def completed_run(root, run_id, experiment):  # verify a completed parent experiment and every recorded artifact hash
     root = Path(root)
     if re.fullmatch(r'[A-Za-z0-9_-]+', run_id) is None:
         raise ValueError('Invalid run ID')

@@ -18,12 +18,12 @@ from src.files import manifest_hashes
 from src.trial_protocol import load_protocol
 
 
-def copy_file(source, destination):
+def copy_file(source, destination):  # copy selected inputs into an isolated workspace without touching the source
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, destination)
 
 
-def compare_scores(actual, expected, fields):
+def compare_scores(actual, expected, fields):  # compare newly generated scores with the accepted reference by claim key
     return assert_equal_scores(
         read_csv(actual),
         read_csv(expected),
@@ -32,8 +32,8 @@ def compare_scores(actual, expected, fields):
     )
 
 
-def compare_metrics(actual, expected):
-    def key(row):
+def compare_metrics(actual, expected):  # check condition coverage, metric tolerances and claim counts
+    def key(row):  # identify one result row by modality and blur condition
         return row["modality"], float(row.get("blur_sigma", 0))
 
     actual_rows = {key(row): row for row in actual}
@@ -61,7 +61,7 @@ def compare_metrics(actual, expected):
                 raise ValueError("Reproduction claim count differs.")
 
 
-def finish(destination, **experiments):
+def finish(destination, **experiments):  # publish a summary only for the research questions independently reproduced
     summary = {
         "status": "passed",
         "experiments": [name.upper() for name in experiments],
@@ -76,7 +76,7 @@ def finish(destination, **experiments):
     return destination
 
 
-def reproduce(data_root, through="rq3"):
+def reproduce(data_root, through="rq3"):  # refit from original biometric data, then reproduce the dependent experiments in order
     if through not in ("rq1", "rq2", "rq3"):
         raise ValueError("Unknown reproduction endpoint.")
     data_root = Path(data_root).resolve()

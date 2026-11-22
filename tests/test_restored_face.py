@@ -1,5 +1,5 @@
-"""Real frozen-face regression; palms are reused as accepted scores for RQ3."""
-import unittest
+
+import unittest  # real frozen-face regression; palms are reused as accepted scores for rq3
 from src.files import ROOT
 from src.fusion import asset_available, accepted_scores
 from src.datasets import dataset_images
@@ -9,8 +9,8 @@ from src.blur import assert_equal_scores
 from src.evaluation import evaluate_labeled
 
 
-class RestoredFaceTest(unittest.TestCase):
-    def test_restored_face_matches_all_accepted_validation_and_test_scores(self):
+class RestoredFaceTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_restored_face_matches_all_accepted_validation_and_test_scores(self):  # verify that restored face matches all accepted validation and test scores
         pointer,metadata,_,partitions,trials,tables=accepted_scores()
         paths=[ROOT/'data/raw/face/olivetti.npz']+[ROOT/i['path'] for i in metadata['models'].values()]
         if not all(asset_available(p) for p in paths):

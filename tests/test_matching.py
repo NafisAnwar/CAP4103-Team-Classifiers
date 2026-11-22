@@ -5,14 +5,14 @@ from src.face_authentication import FaceAuthenticator
 from src.palmprint_authentication import PalmAuthenticator
 
 
-class MatchingTest(unittest.TestCase):
-    def test_sorted_classes_and_claim_lookup_independent_of_probe_order(self):
+class MatchingTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
+    def test_sorted_classes_and_claim_lookup_independent_of_probe_order(self):  # verify that sorted classes and claim lookup independent of probe order
         matcher = TemplateMatcher().fit([[0, 1], [0, 0.9], [1, 0], [0.9, 0]], ['b', 'b', 'a', 'a'])
         self.assertEqual(list(matcher.classes_), ['a', 'b'])
         np.testing.assert_allclose(matcher.score_matrix([[1, 0], [0, 1]]), [[1, 0], [0, 1]])
-        class Adapter:
+        class Adapter:  # group the regression checks and shared test fixtures for this component
             classes_ = matcher.classes_
-            def score_matrix(self, images):
+            def score_matrix(self, images):  # support the deterministic test fixture and its assertions
                 return matcher.score_matrix(images.reshape(len(images), -1))
         trials = [{'trial_id': 'one', 'claimed_user_id': 'b', 'simulated_true_user': 'a', 'is_genuine': 0, 'face_test_sample_id': 'z'},
                   {'trial_id': 'two', 'claimed_user_id': 'a', 'simulated_true_user': 'a', 'is_genuine': 1, 'face_test_sample_id': 'z'}]
@@ -21,7 +21,7 @@ class MatchingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             score_trials(Adapter(), {}, trials, 'face')
 
-    def test_paired_raw_scores_join_on_keys_and_reject_corruption(self):
+    def test_paired_raw_scores_join_on_keys_and_reject_corruption(self):  # verify that paired raw scores join on keys and reject corruption
         face = [{'trial_id': str(i), 'claimed_user_id': 'a', 'is_genuine': i % 2, 'face_score_raw': 0.1 * i} for i in range(4)]
         palm = [{k: v for k, v in row.items() if k != 'face_score_raw'} | {'palm_score_raw': row['face_score_raw'] + 0.2} for row in reversed(face)]
         rows = combine_raw_scores(face, palm)
@@ -34,7 +34,7 @@ class MatchingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             combine_raw_scores(face, palm)
 
-    def test_face_model_is_repeatable_and_scoring_does_not_refit(self):
+    def test_face_model_is_repeatable_and_scoring_does_not_refit(self):  # verify that face model is repeatable and scoring does not refit
         rng = np.random.default_rng(42)
         images = rng.random((12, 8, 8), dtype=np.float32)
         labels = ['b'] * 6 + ['a'] * 6
@@ -50,7 +50,7 @@ class MatchingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             FaceAuthenticator(12).fit(images, labels)
 
-    def test_palm_feature_dimensions_and_finite_scoring(self):
+    def test_palm_feature_dimensions_and_finite_scoring(self):  # verify that palm feature dimensions and finite scoring
         images = np.random.default_rng(42).random((4, 128, 128), dtype=np.float32)
         for feature, dimension in [('hog', 1764), ('lbp', 288)]:
             model = PalmAuthenticator(feature).fit(images, ['a', 'a', 'b', 'b'])

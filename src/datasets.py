@@ -10,18 +10,18 @@ from src.preprocessing import palm_roi, crop_palm
 PALM_NAME = re.compile(r'(?P<subject>\d{3})_(?P<session>[FS])_(?P<hand>[LR])_(?P<number>\d+)\.JPG', re.I)
 
 
-def parse_palm_name(name):
+def parse_palm_name(name):  # recover the explicit subject, session, hand and capture number from bmpd filenames
     match = PALM_NAME.fullmatch(Path(name).name)
     if match is None:
         raise ValueError(f'Unrecognized BMPD sample name: {name}')
     return match.groupdict()
 
 
-def load_faces(root=ROOT):
+def load_faces(root=ROOT):  # load the fixed olivetti arrays without shuffling or deserializing objects
     path = Path(root) / 'data/raw/face/olivetti.npz'
     if not path.exists():
         raise FileNotFoundError('Run scripts/download_data.py --modality face first')
-    with np.load(path, allow_pickle=False) as data:
+    with np.load(path, allow_pickle=False) as data:  # read only trusted numeric arrays from the local archive
         images, labels = data['images'].copy(), data['labels'].copy()
     if images.shape != (400, 64, 64) or labels.shape != (400,):
         raise ValueError('Unexpected Olivetti array shapes')
@@ -30,27 +30,27 @@ def load_faces(root=ROOT):
     return images, labels
 
 
-def dataset_images(partitions, split, root=ROOT):
+def dataset_images(partitions, split, root=ROOT):  # load only the requested split and recheck every selected image hash
     root = Path(root)
     if split not in ['enrollment', 'validation', 'test']:
         raise ValueError('Unknown image split')
     faces, _ = load_faces(root)
     result = {'face': {}, 'palm': {}}
     for row in partitions:
-        if row['split'] != split:
+        if row['split'] != split:  # exclude enrollment or validation samples from held-out test loading
             continue
         sample, modality = row['original_sample_id'], row['modality']
         if modality == 'face':
-            image = faces[int(row['source_path_or_key'].rsplit('#', 1)[1])]
-            digest = hashlib.sha256(image.tobytes()).hexdigest() #use the same decoded pixels as the audit
+            image = faces[int(row['source_path_or_key'].rsplit('#', 1)[1])]  # resolve the precise audited olivetti array index
+            digest = hashlib.sha256(image.tobytes()).hexdigest()  # use the same decoded pixels as the audit
         elif modality == 'palm':
             with Image.open(root / row['source_path_or_key']) as source:
                 pixels = ImageOps.exif_transpose(source).convert('RGB')
-                digest = hashlib.sha256(str(pixels.size).encode() + pixels.tobytes()).hexdigest()
-                image = crop_palm(pixels) #keep the original crop unchanged for frozen models
+                digest = hashlib.sha256(str(pixels.size).encode() + pixels.tobytes()).hexdigest()  # include dimensions in the decoded palm pixel hash
+                image = crop_palm(pixels)  # keep the original crop unchanged for frozen models
         else:
             raise ValueError('Unknown image modality')
-        if digest != row['pixel_sha256']:
+        if digest != row['pixel_sha256']:  # reject modified samples or mismatched image provenance
             raise ValueError(f'Sample changed since audit: {sample}')
         if sample in result[modality]:
             raise ValueError(f'Repeated image sample: {sample}')
@@ -58,7 +58,7 @@ def dataset_images(partitions, split, root=ROOT):
     return result
 
 
-def audit_datasets(root=ROOT, rebuild=False):
+def audit_datasets(root=ROOT, rebuild=False):  # inventory biometric samples and flag duplicates or unusable palm regions
     root = Path(root)
     guard_manifest_rebuild(root, ['face_samples.csv', 'palm_samples.csv', 'palm_subject_counts.csv', 'dataset_summary.json'], rebuild)
     images, labels = load_faces(root)
@@ -66,7 +66,7 @@ def audit_datasets(root=ROOT, rebuild=False):
     for index, (image, label) in enumerate(zip(images, labels)):
         digest = hashlib.sha256(image.tobytes()).hexdigest()
         sample = f'face_{index:03d}'
-        duplicate = seen.get(digest, '')
+        duplicate = seen.get(digest, '')  # detect exact decoded face duplicates before partition construction
         seen.setdefault(digest, sample)
         faces.append({'sample_id': sample, 'subject_id': str(int(label)), 'array_index': index,
                       'pixel_sha256': digest, 'duplicate_of': duplicate,
@@ -91,14 +91,14 @@ def audit_datasets(root=ROOT, rebuild=False):
                 digest = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
                 roi = crop_palm(image)
             row['pixel_sha256'] = digest
-            prior = seen.get(digest)
+            prior = seen.get(digest)  # detect exact duplicate palm captures and check subject consistency
             if prior:
                 if prior['subject_id'] != row['subject_id']:
                     raise ValueError(f'Identical pixels under different subjects: {path.name}')
                 row['duplicate_of'], row['status'] = prior['sample_id'], 'duplicate'
             else:
                 seen[digest] = row
-            row['roi_std'] = float(roi.std())
+            row['roi_std'] = float(roi.std())  # quantify contrast in the extracted palm region
             if row['status'] == 'usable' and (min(image.size) < 128 or roi.std() < 0.02):
                 row['status'] = 'low_contrast_or_resolution'
         except (OSError, SyntaxError, ValueError) as error:
@@ -131,11 +131,11 @@ def audit_datasets(root=ROOT, rebuild=False):
                'bmpd_source': 'https://www.kaggle.com/datasets/mahdieizadpanah/birjand-university-mobile-palmprint-databasebmpd',
                'olivetti_source': 'https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_olivetti_faces.html'}
     write_json(manifest / 'dataset_summary.json', summary)
-    contact_sheets(root, palms)
+    contact_sheets(root, palms)  # create local roi inspection evidence without distributing biometric images
     return summary, counts
 
 
-def contact_sheets(root, rows):
+def contact_sheets(root, rows):  # export local visual quality checks comparing palm images and their extracted regions
     selected = []
     for subject in sorted({row['subject_id'] for row in rows}):
         for session in ['F', 'S']:

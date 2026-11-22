@@ -12,7 +12,7 @@ from src.preprocessing import palm_roi
 from src.experiment_support import load_frozen_models
 
 
-def frozen_assets_available():
+def frozen_assets_available():  # support the deterministic test fixture and its assertions
     pointer = ROOT / 'results/metrics/rq1_accepted.json'
     if not pointer.is_file():
         return False
@@ -23,20 +23,20 @@ def frozen_assets_available():
     paths = [ROOT / 'data/raw/face/olivetti.npz']
     paths += [ROOT / info['path'] for info in metadata['models'].values()]
     paths += [ROOT / row['source_path_or_key'] for row in read_csv(ROOT / 'data/manifests/partitions.csv') if row['modality'] == 'palm']
-    return all(asset_available(path) for path in paths) #a partial download must not masquerade as a complete integration environment
+    return all(asset_available(path) for path in paths)  # a partial download must not masquerade as a complete integration environment
 
 
 @unittest.skipUnless((ROOT / 'results/metrics/rq1_latest.json').exists(), 'Local RQ1 outputs required')
-class ExperimentIntegrityTest(unittest.TestCase):
+class ExperimentIntegrityTest(unittest.TestCase):  # group the regression checks and shared test fixtures for this component
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # prepare an isolated fixture before running the relevant regression checks
         pointer = json.loads((ROOT / 'results/metrics/rq1_latest.json').read_text())
         cls.metadata = json.loads((ROOT / pointer['metadata']).read_text())
         cls.folder = (ROOT / pointer['metadata']).parent
         cls.config, cls.partitions, cls.trials = load_protocol()
         cls.rows = read_csv(cls.folder / 'rq1_baseline_scores.csv')
 
-    def test_exported_scores_exactly_cover_the_manifest_and_reproduce_metrics(self):
+    def test_exported_scores_exactly_cover_the_manifest_and_reproduce_metrics(self):  # verify that exported scores exactly cover the manifest and reproduce metrics
         expected = {(row['trial_id'], row['claimed_user_id'], int(row['is_genuine'])) for row in self.trials['test']}
         actual = {(row['trial_id'], row['claimed_user_id'], int(row['is_genuine'])) for row in self.rows}
         self.assertEqual(len(self.rows), len(expected))
@@ -49,7 +49,7 @@ class ExperimentIntegrityTest(unittest.TestCase):
                 self.assertAlmostEqual(calculated[field], saved[field], places=12)
 
     @unittest.skipUnless(frozen_assets_available(), 'Actual accepted models/images required; missing files or Git LFS pointers do not count')
-    def test_frozen_models_use_only_enrollment_and_reproduce_a_probe(self):
+    def test_frozen_models_use_only_enrollment_and_reproduce_a_probe(self):  # verify that frozen models use only enrollment and reproduce a probe
         models, metadata = load_frozen_models()
         accepted = json.loads((ROOT / 'results/metrics/rq1_accepted.json').read_text())
         score_rows = read_csv((ROOT / accepted['metadata']).parent / 'rq1_baseline_scores.csv')
@@ -58,7 +58,7 @@ class ExperimentIntegrityTest(unittest.TestCase):
             self.assertEqual(set(model_info['fit_sample_ids']), enrollment)
             path = ROOT / model_info['path']
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), model_info['sha256'])
-            model = models[modality] #the shared loader verifies metadata, manifests, feature code and model hashes
+            model = models[modality]  # the shared loader verifies metadata, manifests, feature code and model hashes
             self.assertEqual(set(model.fit_sample_ids_), enrollment)
             trial = self.trials['test'][0]
             sample = trial[f'{modality}_test_sample_id']
@@ -73,7 +73,7 @@ class ExperimentIntegrityTest(unittest.TestCase):
             np.testing.assert_allclose(matrix, [expected[claim] for claim in model.classes_], rtol=1e-10, atol=1e-10)
 
     @unittest.skipUnless(frozen_assets_available(), 'Actual accepted models/images required; missing files or Git LFS pointers do not count')
-    def test_reproduced_models_can_be_loaded_without_replacing_the_accepted_paths(self):
+    def test_reproduced_models_can_be_loaded_without_replacing_the_accepted_paths(self):  # verify that reproduced models can be loaded without replacing the accepted paths
         pointer = json.loads((ROOT / 'results/metrics/rq1_latest.json').read_text())
         metadata = json.loads((ROOT / pointer['metadata']).read_text())
         if not all((ROOT / info['path']).is_file() for info in metadata['models'].values()):

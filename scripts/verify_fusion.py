@@ -1,5 +1,5 @@
-"""Compare two completed RQ2 runs; does not train or modify the accepted baseline."""
-from pathlib import Path
+
+from pathlib import Path  # compare two completed rq2 runs; does not train or modify the accepted baseline
 from dataclasses import asdict
 import argparse
 import sys
@@ -10,7 +10,7 @@ from src.blur import assert_equal_scores
 from src.fusion_reporting import verify_metrics
 
 
-def verify(first,second,output,root=ROOT):
+def verify(first,second,output,root=ROOT):  # compare two completed rq2 runs against the accepted baseline and normalization fit
     root,output=Path(root),Path(output)
     if first==second:
         raise ValueError('Choose two distinct completed run IDs')
@@ -44,7 +44,7 @@ def verify(first,second,output,root=ROOT):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__)
+    parser=argparse.ArgumentParser(description='Compare two completed RQ2 runs; does not train or modify the accepted baseline.')
     parser.add_argument('--first',required=True)
     parser.add_argument('--second',required=True)
     parser.add_argument('--output',required=True)

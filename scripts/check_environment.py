@@ -1,4 +1,4 @@
-from importlib.metadata import version
+from importlib.metadata import version  # provide the command-line entry point for check environment
 from pathlib import Path
 import json
 import platform

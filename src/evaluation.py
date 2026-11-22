@@ -8,9 +8,9 @@ from src.hw3_evaluator import Evaluator as HW3Evaluator
 from src.files import write_csv, write_json
 
 
-class Evaluator:
+class Evaluator:  # adapt the original hw3 evaluator to empirical multimodal score thresholds
     def __init__(self, genuine_scores, impostor_scores, score_type='cosine_similarity_higher_is_better',
-                 score_label='Cosine similarity (higher is better)'):
+                 score_label='Cosine similarity (higher is better)'):  # validate score labels and the two nonempty finite score populations
         if not isinstance(score_type, str) or not score_type.strip() or not isinstance(score_label, str) or not score_label.strip():
             raise ValueError('Score type and label must be nonempty strings')
         self.score_type, self.score_label = score_type, score_label  # describe the score scale for each modality
@@ -21,14 +21,14 @@ class Evaluator:
                 raise ValueError('Genuine and impostor scores must be nonempty finite vectors')
         self.hw3 = HW3Evaluator(500, self.genuine_scores, self.impostor_scores, score_label, epsilon=0)  # both score classes are nonempty, so count denominators cannot be zero
 
-    def get_dprime(self):
+    def get_dprime(self):  # measure score separation with pooled variance and an explicit degenerate policy
         difference = float(self.genuine_scores.mean() - self.impostor_scores.mean())  # handle zero-variance cases before calling the homework evaluator
         pooled = np.sqrt((self.genuine_scores.var() + self.impostor_scores.var()) / 2)
         if pooled == 0:
             return 0.0 if difference == 0 else None  # retain the existing policy for undefined d-prime
         return float(self.hw3.get_dprime())  # use the original hw3 pooled-variance calculation
 
-    def compute_rates(self):
+    def compute_rates(self):  # evaluate every distinct score threshold from reject-all to accept-all
         scores = np.r_[self.genuine_scores, self.impostor_scores]
         thresholds = np.r_[np.inf, np.unique(scores)[::-1]]  # cover the full observed score range, including negative fusion scores
         self.hw3.thresholds = thresholds
@@ -36,7 +36,7 @@ class Evaluator:
         return np.asarray(fpr), np.asarray(fnr), np.asarray(tpr), thresholds
 
     @staticmethod
-    def get_eer(fpr, fnr):
+    def get_eer(fpr, fnr):  # interpolate the empirical crossing where false accepts equal false rejects
         difference = fpr - fnr
         crossing = np.flatnonzero(difference >= 0)
         if not len(crossing):
@@ -46,10 +46,10 @@ class Evaluator:
             return float(fpr[index])
         if index == 0:
             raise ValueError('Invalid ROC endpoints')
-        weight = -difference[index - 1] / (difference[index] - difference[index - 1]) #interpolate between the two neighboring rates
+        weight = -difference[index - 1] / (difference[index] - difference[index - 1])  # interpolate between the two neighboring rates
         return float(fpr[index - 1] + weight * (fpr[index] - fpr[index - 1]))
 
-    def metrics(self):
+    def metrics(self):  # collect the numerical performance evidence and score-orientation diagnostic
         labels = np.r_[np.ones(len(self.genuine_scores)), np.zeros(len(self.impostor_scores))]
         scores = np.r_[self.genuine_scores, self.impostor_scores]
         genuine_mean, impostor_mean = float(self.genuine_scores.mean()), float(self.impostor_scores.mean())
@@ -63,7 +63,7 @@ class Evaluator:
                 'evaluation_source': 'hw3_submitted_evaluator_empirical_thresholds',
                 'score_type': self.score_type}
 
-    def export(self, metrics_dir, figures_dir, name):
+    def export(self, metrics_dir, figures_dir, name):  # save metrics, threshold rates and labeled biometric performance plots
         metrics_dir, figures_dir = Path(metrics_dir), Path(figures_dir)
         metrics_dir.mkdir(parents=True, exist_ok=True)
         figures_dir.mkdir(parents=True, exist_ok=True)
@@ -105,8 +105,8 @@ class Evaluator:
         return metrics
 
 
-def evaluate_labeled(scores, labels, **score_description):
+def evaluate_labeled(scores, labels, **score_description):  # split keyed claim scores into genuine and impostor populations
     scores, labels = np.asarray(scores, dtype=float), np.asarray(labels)
     if scores.ndim != 1 or labels.shape != scores.shape or not np.isin(labels, [0, 1]).all():
         raise ValueError('Scores and binary labels need matching one-dimensional shapes')
-    return Evaluator(scores[labels == 1], scores[labels == 0], **score_description) #all callers still use higher-is-better scores
+    return Evaluator(scores[labels == 1], scores[labels == 0], **score_description)  # all callers still use higher-is-better scores
