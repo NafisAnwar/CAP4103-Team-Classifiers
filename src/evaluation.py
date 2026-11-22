@@ -3,7 +3,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.metrics import roc_auc_score
+from src.hw3_evaluator import Evaluator as HW3Evaluator
 from src.files import write_csv, write_json
 
 
@@ -12,23 +13,27 @@ class Evaluator:
                  score_label='Cosine similarity (higher is better)'):
         if not isinstance(score_type, str) or not score_type.strip() or not isinstance(score_label, str) or not score_label.strip():
             raise ValueError('Score type and label must be nonempty strings')
-        self.score_type, self.score_label = score_type, score_label #fusion callers can describe their own scale
+        self.score_type, self.score_label = score_type, score_label  # describe the score scale for each modality
         self.genuine_scores = np.asarray(genuine_scores, dtype=float)
         self.impostor_scores = np.asarray(impostor_scores, dtype=float)
         for values in [self.genuine_scores, self.impostor_scores]:
             if values.ndim != 1 or len(values) == 0 or not np.isfinite(values).all():
                 raise ValueError('Genuine and impostor scores must be nonempty finite vectors')
+        self.hw3 = HW3Evaluator(500, self.genuine_scores, self.impostor_scores, score_label, epsilon=0)  # both score classes are nonempty, so count denominators cannot be zero
 
     def get_dprime(self):
-        difference = float(self.genuine_scores.mean() - self.impostor_scores.mean()) #keep the ppa3 pooled-variance definition
+        difference = float(self.genuine_scores.mean() - self.impostor_scores.mean())  # handle zero-variance cases before calling the homework evaluator
         pooled = np.sqrt((self.genuine_scores.var() + self.impostor_scores.var()) / 2)
-        return float(abs(difference) / pooled) if pooled > 0 else 0.0 if difference == 0 else None
+        if pooled == 0:
+            return 0.0 if difference == 0 else None  # retain the existing policy for undefined d-prime
+        return float(self.hw3.get_dprime())  # use the original hw3 pooled-variance calculation
 
     def compute_rates(self):
-        labels = np.r_[np.ones(len(self.genuine_scores)), np.zeros(len(self.impostor_scores))]
         scores = np.r_[self.genuine_scores, self.impostor_scores]
-        fpr, tpr, thresholds = roc_curve(labels, scores, drop_intermediate=False) #keep every empirical threshold for the crossing
-        return fpr, 1 - tpr, tpr, thresholds
+        thresholds = np.r_[np.inf, np.unique(scores)[::-1]]  # cover the full observed score range, including negative fusion scores
+        self.hw3.thresholds = thresholds
+        fpr, fnr, tpr = self.hw3.compute_rates()  # use the actual hw3 true/false positive and negative counts
+        return np.asarray(fpr), np.asarray(fnr), np.asarray(tpr), thresholds
 
     @staticmethod
     def get_eer(fpr, fnr):
@@ -55,6 +60,7 @@ class Evaluator:
                 'impostor_mean': impostor_mean,
                 'score_direction_check': 'passed' if genuine_mean > impostor_mean else 'equal_means' if genuine_mean == impostor_mean else 'reversed_means',
                 'eer_method': 'linear_interpolation_empirical_roc',
+                'evaluation_source': 'hw3_submitted_evaluator_empirical_thresholds',
                 'score_type': self.score_type}
 
     def export(self, metrics_dir, figures_dir, name):
@@ -79,6 +85,7 @@ class Evaluator:
         fig, ax = plt.subplots(figsize=(6, 4))
         ax.plot(fpr, fnr, label=f'EER = {100 * metrics["eer"]:.2f}%')
         ax.plot([0, 1], [0, 1], '--', color='gray')
+        ax.scatter([metrics['eer']], [metrics['eer']], color='black', zorder=3, label='Interpolated crossing')  # mark the descriptive equal-error point
         ax.set(xlabel='False accept rate', ylabel='False reject rate', title=title + ': FAR/FRR tradeoff')
         ax.legend()
         fig.tight_layout()
@@ -87,9 +94,10 @@ class Evaluator:
         low, high = min(self.genuine_scores.min(), self.impostor_scores.min()), max(self.genuine_scores.max(), self.impostor_scores.max())
         bins = np.linspace(low - 1e-6, high + 1e-6, 31)
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.hist(self.genuine_scores, bins=bins, density=True, histtype='step', label='Genuine')
-        ax.hist(self.impostor_scores, bins=bins, density=True, histtype='step', label='Impostor')
-        ax.set(xlabel=self.score_label, ylabel='Density', title=title + ': scores')
+        ax.hist(self.genuine_scores, bins=bins, density=True, histtype='step', color='green', label='Genuine')
+        ax.hist(self.impostor_scores, bins=bins, density=True, histtype='step', color='red', label='Impostor')
+        dprime = 'undefined' if metrics['d_prime'] is None else f"{metrics['d_prime']:.4f}"
+        ax.set(xlabel=self.score_label, ylabel='Density', title=title + f": scores (d-prime = {dprime})")  # restore the hw3 score-distribution annotation
         ax.legend()
         fig.tight_layout()
         fig.savefig(figures_dir / f'{name}_scores.png', dpi=180)

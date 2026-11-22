@@ -8,5 +8,6 @@
 *.pdf binary
 # preserve original bytes, including line endings
 ppa3_legacy/* -text
+docs/hw3_original.py.txt -text -diff
 data/processed/** filter=lfs diff=lfs merge=lfs -text
 data/raw/** filter=lfs diff=lfs merge=lfs -text

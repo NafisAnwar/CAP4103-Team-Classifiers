@@ -103,7 +103,7 @@ The implementation verifies sigma-zero equivalence within 1e-12 and exact palmpr
 
 ## Performance Evaluation
 
-The evaluation module adapts the original HW3/PPA3 workflow for image-based authentication and multimodal similarity scores.
+The evaluation module invokes the submitted HW3 numerical evaluator in `src/hw3_evaluator.py` to calculate true/false positive and negative counts, FAR, FRR, TAR and d-prime. Its four numerical methods are preserved with unchanged executable statements. The project supplies all empirical score thresholds rather than the original fixed grid so negative cosine and unbounded normalized fusion scores are covered. Since both score groups must be nonempty, the rate denominators are nonzero; the project handles zero pooled variance separately before calling HW3 d-prime with epsilon zero.
 
 The reported metrics include:
 
@@ -113,7 +113,7 @@ The reported metrics include:
 - Genuine and impostor score distributions
 - False Acceptance Rate and False Rejection Rate
 
-EER is calculated using linear interpolation at the empirical FAR/FRR crossing. This differs from the archived PPA3 threshold-grid implementation.
+EER is calculated using linear interpolation at the empirical FAR/FRR crossing rather than the original nearest-grid approximation. The original HW3 source remains unchanged in `docs/hw3_original.py.txt`. The project additionally calculates ROC AUC using exact score rankings. Historical PPA3 evidence and prior experimental results are retained as originally generated.
 
 ## Reproducibility
 

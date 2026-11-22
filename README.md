@@ -24,7 +24,7 @@ Three connected experiments evaluate individual authentication performance, equa
 
 The implementation includes dataset preparation, identity alignment, enrollment, feature extraction, template matching, similarity scoring, fusion, performance evaluation, and experimental verification.
 
-The evaluation module extends the original HW3/PPA3 performance evaluation workflow to support image-based and multimodal authentication.
+The evaluation module directly reuses the submitted HW3 numerical evaluator in `src/hw3_evaluator.py`. The project supplies empirical score thresholds, interpolates EER and calculates ROC AUC for real biometric scores. The unchanged HW3 source is archived in `docs/hw3_original.py.txt`; the separate PPA3 implementation remains historical evidence.
 
 ## 2. Research Questions
 
