@@ -98,7 +98,7 @@ def main():  # run every required study verification gate without changing the o
         "suite = unittest.defaultTestLoader.discover('tests'); "
         "result = unittest.TextTestRunner(verbosity=2).run(suite); "
         "sys.exit(0 if result.wasSuccessful() "
-        "and result.testsRun == 69 and not result.skipped else 1)"
+        "and result.testsRun == 72 and not result.skipped else 1)"
     )
 
     run_python(['-c', test_command])

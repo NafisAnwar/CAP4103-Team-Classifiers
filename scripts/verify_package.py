@@ -1,6 +1,7 @@
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import argparse
 import hashlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -20,26 +21,44 @@ def run_python(*args):  # run verification subprocesses with the same environmen
     )
 
 
-def verify_package_integrity():  # check the stored byte hash for every submitted file
-    manifest = root / "SHA256SUMS.txt"
+def verify_package_integrity(project_root=root):  # check the stored byte hash for each submitted file including the launcher
+    project_root = Path(project_root).resolve()
+    base = project_root.parent
+    manifest = project_root / "SHA256SUMS.txt"
 
     if not manifest.exists():
         raise FileNotFoundError("Package checksum manifest is missing.")
 
-    count = 0
+    seen = set()
+    required = {"main.py", "RUN_PROJECT.cmd", "README.md", "requirements.txt",
+                "project/requirements-lock.txt", "project/scripts/verify_package.py",
+                "project/scripts/reproduce_full.py", "project/src/hw3_evaluator.py"}
 
     for line in manifest.read_text(encoding="utf-8").splitlines():
         expected, relative = line.split("  ", 1)
-        path = root / relative
+        parts = PurePosixPath(relative).parts
+        if (not re.fullmatch(r"[0-9a-f]{64}", expected) or not parts or "\\" in relative
+                or ":" in relative or relative != PurePosixPath(relative).as_posix()
+                or PurePosixPath(relative).is_absolute() or ".." in parts
+                or relative in seen or relative == "project/SHA256SUMS.txt"
+                or (relative not in required and parts[0] != "project")):
+            raise ValueError(f"Invalid checksum entry: {relative}")
+        path = base / relative
+        if not path.is_file() or not path.resolve().is_relative_to(base):
+            raise ValueError(f"Missing or unsafe package file: {relative}")
 
         actual = hashlib.sha256(path.read_bytes()).hexdigest()
 
         if actual != expected:
             raise ValueError(f"Package file changed: {relative}")
 
-        count += 1
+        seen.add(relative)
 
-    print(f"PASS: {count} packaged file checksums", flush=True)
+    if not required.issubset(seen):
+        raise ValueError("Required package files are absent from the checksum manifest.")
+    if (base / "requirements.txt").read_bytes() != (project_root / "requirements-lock.txt").read_bytes():
+        raise ValueError("The visible requirements file differs from the pinned project lock.")
+    print(f"PASS: {len(seen)} packaged file checksums", flush=True)
 
 
 def verify_baseline_metrics():  # recalculate baseline metrics directly from accepted raw scores

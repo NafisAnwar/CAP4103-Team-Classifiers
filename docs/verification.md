@@ -55,7 +55,15 @@ The test suite verifies:
 
 ## Single-Command Verification
 
-The complete saved-study verification workflow is available through:
+From the extracted submission root, run the grader-facing verification workflow:
+
+```powershell
+.\RUN_PROJECT.cmd verify
+```
+
+To independently reproduce all image-level experiments, obtain the original datasets and run `.\RUN_PROJECT.cmd full`. See the top-level README for acquisition and reproduction instructions.
+
+The complete historical study verification workflow, requiring the original raw data and frozen models in the development checkout, is available through:
 
 ```powershell
 .\.venv\Scripts\python.exe -B scripts/verify_study.py
@@ -82,7 +90,7 @@ Use a new output directory for each audit.
 
 ## Verification Evidence
 
-- [Automated test results](../results/metrics/main_integration_20261116/tests.txt)
+- [Historical integrated verification record](../results/metrics/main_integration_20261116/verification.json)
 - [Reproduction comparison](../results/metrics/main_integration_20261116/reproduction_comparison.json)
 - [Integration audit](../results/metrics/main_integration_20261116/score_audit/integration_audit.json)
 - [Master experimental metrics](../results/metrics/main_integration_20261116/score_audit/study_master_metrics.csv)
